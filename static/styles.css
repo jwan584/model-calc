@@ -1,0 +1,40 @@
+body {
+    font-family: Arial, sans-serif;
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.container {
+    display: flex;
+    justify-content: space-between;
+}
+
+.left, .right {
+    width: 45%;
+}
+
+ul {
+  line-height: 1.35;
+}
+
+
+input {
+    display: block;
+    width: 100%;
+    margin-bottom: 10px;
+}
+
+button {
+    width: 100%;
+    background-color: #4CAF50;
+    color: white;
+    font-weight: bold;
+    padding: 10px;
+    border: none;
+    cursor: pointer;
+}
+
+button:hover {
+    background-color: #45a049;
+}

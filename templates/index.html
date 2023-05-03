@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Model Converter</title>
+    <link rel="stylesheet" href="/static/styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <h1>Chinchilla2Llama Model Converter</h1>
+    <div class="container">
+        <div class="left">
+            <h2>Input Model</h2>
+            <label for="parameters">Parameters</label>
+            <input type="number" id="parameters">
+            <label for="trainingTokens">Training Tokens</label>
+            <input type="number" id="trainingTokens">
+            <label for="compactModelParameters">Compact Model Parameters</label>
+            <input type="number" id="compactModelParameters">
+            <label for="inferences">Number of Inferences (billion tokens)</label>
+            <input type="number" id="inferences" placeholder="optional">
+            <button id="calculate">Calculate</button>
+            <h2>Estimates:</h2>
+            <ul>
+              <li><strong>Estimated Loss:</strong> <span id="estimated-loss"></span></li>
+              <li><strong>Training Flops:</strong> <span id="compute"></span></li>
+              <li><strong>Cost:</strong> <span id="cost"></span></li>
+            </ul>
+            <div id="estimates"></div>
+        </div>
+        <div class="right">
+            <h2>New Model Estimates</h2>
+            <div id="newModel"></div>
+                <ul>
+                  <li><strong>Estimated Loss:</strong> <span id="new_estimated-loss"></span></li>
+                  <li><strong>Training Flops:</strong> <span id="new_compute"></span></li>
+                  <li><strong>Cost:</strong> <span id="new_cost"></span></li>
+                  <li><strong>Cost Increase:</strong> <span id="otc"></span></li>
+                  <li><strong>Inference Breakeven:</strong> <span id="inf_breakeven"></span></li>
+              </ul>
+        </div>
+    </div>
+    <canvas id="myChart"></canvas>
+    <script src="/static/script.js"></script>
+</body>
+</html>
