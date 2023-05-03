@@ -21,7 +21,7 @@ def training_cost(f):
 def compact_model(p, t, new_p):
     new_t = None
     og_loss = loss(p, t)
-    token_range = np.arange(0.1e9, 2000e9, 0.1e9)
+    token_range = np.arange(0.1e9, 10000e9, 0.1e9)
 
     for tr in token_range:
         new_loss = loss(new_p, tr)
@@ -45,11 +45,13 @@ def index():
 
 @app.route("/api/calculate", methods=["POST"])
 def calculate():
+
     data = request.get_json()
     
     parameters = float(data["parameters"]) * 1e9
     training_tokens = float(data["trainingTokens"]) * 1e9
    
+    # error handling for optional Inferences field
     inferences = data.get("inferences")
     if inferences is None or inferences == "":
         inferences = 0
@@ -59,12 +61,26 @@ def calculate():
     original_loss = loss(parameters, training_tokens)
     original_flops = flops(parameters, training_tokens)
     original_cost = training_cost(original_flops)
+    original_inf_cost = 2 * parameters * inferences
 
     compact_model_parameters = float(data["compactModelParameters"]) * 1e9
     compact_model_tokens = compact_model(parameters, training_tokens, compact_model_parameters)
 
+    model_found = True
+    if compact_model_tokens is None:
+        model_found = False
+        input_model = { "loss": original_loss,
+                        "compute": original_flops,
+                        "original_inf_cost":original_inf_cost,
+                        "cost": original_cost}
+        output_model = {"found":model_found}
+        return jsonify({"input_model": input_model, "output_model": output_model})
+
+
+    compact_model_tokens_str = str(compact_model_tokens/1e9) + " billion"
     compact_model_loss = loss(compact_model_parameters, compact_model_tokens)
     compact_model_flops = flops(compact_model_parameters, compact_model_tokens)
+
     compact_model_cost = training_cost(compact_model_flops)
 
     over_training_cost = (compact_model_flops / original_flops - 1) * 100
@@ -74,15 +90,15 @@ def calculate():
     inf_breakeven_tokens = (compact_model_flops - original_flops) / (2 * (parameters - compact_model_parameters))
     inf_breakeven_tokens_str = str(round(inf_breakeven_tokens/1e9, 1)) + " billion tokens"
 
-    original_inf_cost = 2 * parameters * inferences
     compact_inf_cost = 2 * compact_model_parameters * inferences
 
     input_model = { "loss": original_loss,
                     "compute": original_flops,
                     "original_inf_cost":original_inf_cost,
                     "cost": original_cost}
-    output_model = {"loss": compact_model_loss, 
-                    "tokens": compact_model_tokens,
+    output_model = {"found":model_found,
+                    "loss": compact_model_loss, 
+                    "tokens": compact_model_tokens_str,
                     "compute": compact_model_flops,
                     "cost": compact_model_cost,
                     "otc":over_training_cost,
