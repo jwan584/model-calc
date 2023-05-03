@@ -25,7 +25,7 @@ document.getElementById("calculate").addEventListener("click", async () => {
     
     const costValue = data.input_model.cost;
     const formattedCostValue = "$" + costValue.toLocaleString();
-    document.getElementById("cost").textContent = formattedCostValue;
+    // document.getElementById("cost").textContent = formattedCostValue;
 
 
     const inputTrainingFlops = data.input_model.compute;
@@ -38,7 +38,7 @@ document.getElementById("calculate").addEventListener("click", async () => {
     if(data.output_model.found == false) {
       document.getElementById("new_estimated-loss").textContent = "No model found"
       document.getElementById("new_compute").textContent = "n/a"
-      document.getElementById("new_cost").textContent = "n/a"
+      // document.getElementById("new_cost").textContent = "n/a"
       document.getElementById("new_tokens").textContent = "n/a"
       document.getElementById("otc").textContent = "n/a"
       document.getElementById("inf_breakeven").textContent = "n/a"
@@ -52,7 +52,7 @@ document.getElementById("calculate").addEventListener("click", async () => {
       const formattedoutputTrainingFlops = outputTrainingFlops.toExponential(2);
       document.getElementById("new_estimated-loss").textContent = data.output_model.loss;   
       document.getElementById("new_compute").textContent = formattedoutputTrainingFlops;
-      document.getElementById("new_cost").textContent = formattedCostValueNew;
+      // document.getElementById("new_cost").textContent = formattedCostValueNew;
       document.getElementById("new_tokens").textContent = data.output_model.tokens;
       document.getElementById("otc").textContent = data.output_model.otc; 
       document.getElementById("inf_breakeven").textContent = data.output_model.inf_breakeven
