@@ -1,7 +1,37 @@
+// Define a variable to store the current scroll position
+let scrollPosition = 0;
+
+
 document.addEventListener("keydown", event => {
   if (event.keyCode === 13) { // 13 is the key code for the enter key
     document.getElementById("calculate").click();
   }
+});
+
+// Auto fill chinchilla values
+document.getElementById("parameters").addEventListener("input", () => {
+  const checkbox = document.getElementById("is_chinchilla").checked;
+  const parameters = document.getElementById("parameters");
+  const suggestedTokens = document.getElementById("trainingTokens")
+  const suggestedParams = document.getElementById("compactModelParameters")
+
+  suggestedParams.value = parameters.value / 2;
+  if (checkbox) suggestedTokens.value = parameters.value * 20;
+
+});
+
+// Auto fill chinchilla values when re-checked
+document.getElementById("is_chinchilla").addEventListener("input", () => {
+  const checkbox = document.getElementById("is_chinchilla").checked;
+  const parameters = document.getElementById("parameters").value;
+  
+  if (checkbox) document.getElementById("trainingTokens").value = parameters * 20
+});
+
+// Disable chinchilla values
+document.getElementById("trainingTokens").addEventListener("input", () => {
+  const checkbox = document.getElementById("is_chinchilla");
+  checkbox.checked = false;
 });
 
 document.getElementById("calculate").addEventListener("click", async () => {
@@ -9,6 +39,9 @@ document.getElementById("calculate").addEventListener("click", async () => {
     const trainingTokens = document.getElementById("trainingTokens").value;
     const compactModelParameters = document.getElementById("compactModelParameters").value;
     const inferences = document.getElementById("inferences").value;
+
+    // Get the current scroll position
+    scrollPosition = window.scrollY;
 
     const response = await fetch("/api/calculate", {
         method: "POST",
@@ -27,12 +60,10 @@ document.getElementById("calculate").addEventListener("click", async () => {
     const formattedCostValue = "$" + costValue.toLocaleString();
     // document.getElementById("cost").textContent = formattedCostValue;
 
-
     const inputTrainingFlops = data.input_model.compute;
     const inputInfFlops = data.input_model.original_inf_cost;
     const formattedinputTrainingFlops = inputTrainingFlops.toExponential(2);
     document.getElementById("compute").textContent = formattedinputTrainingFlops;
-
 
     // Display Compact Model loss, compute, and cost
     if(data.output_model.found == false) {
@@ -69,7 +100,7 @@ document.getElementById("calculate").addEventListener("click", async () => {
       window.chart = new Chart(canvas, {
         type: 'bar',
         data: {
-          labels: ['Input Model', 'Compacted Model'],
+          labels: ['Input Model', 'Llama Model'],
           datasets: [
             {
               label: 'Training FLOPS',
@@ -86,35 +117,58 @@ document.getElementById("calculate").addEventListener("click", async () => {
           ]
         },
         options: {
+          plugins: {
+            legend: {
+              position: 'bottom'
+            }
+          },
           scales: {
-            xAxes: [{
-              stacked: true, // Enable stacked bar chart for the x-axis
-              scaleLabel: {
+            x: {
+              stacked: true,
+              title: {
                 display: true,
-                labelString: 'X-axis Label',
-                fontSize: 24
+                font: {
+                  size: 24,
+                  family: 'Rubik',
+                  weight: '500',
+                  color: '#000'
+                }
               },
               ticks: {
-                fontSize: 14 // Set the font size for the x-axis tick labels
+                font: {
+                  size: 14,
+                  family: 'Rubik',
+                  weight: '500',
+                  color: '#000'
+                }
               }
-            }],
-            yAxes: [{
-              stacked: true, // Enable stacked bar chart for the y-axis
-              scaleLabel: {
+            },
+            y: {
+              stacked: true,
+              title: {
                 display: true,
-                labelString: 'Y-axis Label',
-                fontSize: 24
+                text: 'FLOPS',
+                font: {
+                  size: 14,
+                  family: 'Rubik',
+                  weight: '500',
+                  color: '#000'
+                }
               },
               ticks: {
-                beginAtZero: true, // Start the y-axis scale at zero
-                fontSize: 14 // Set the font size for the y-axis tick labels
+                beginAtZero: true,
+                font: {
+                  size: 14,
+                  family: 'Rubik',
+                  weight: '500',
+                  color: '#000'
+                }
               }
-            }]
+            }
           }
         }
       });
 
+      window.scrollTo(0, scrollPosition);
     } 
-
-
 });

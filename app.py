@@ -21,7 +21,7 @@ def training_cost(f):
 def compact_model(p, t, new_p):
     new_t = None
     og_loss = loss(p, t)
-    token_range = np.arange(0.1e9, 10000e9, 0.1e9)
+    token_range = np.arange(0.1e9, 100000e9, 0.1e9)
 
     for tr in token_range:
         new_loss = loss(new_p, tr)
