@@ -36,29 +36,29 @@ def compact_model(p, t, new_p):
 
     return new_t
 
-def compact_model(p, t, new_p):
-    og_loss = loss(p, t)
-    print(f"OG Loss: {og_loss}")
-    # Define the lower and upper bounds of the token range
-    lower_bound = 0.1e9
-    upper_bound = 1e15
-    # Set an initial guess for the new token value
-    new_t = (lower_bound + upper_bound) / 2
-    # Define a tolerance level for the loss function
-    tolerance = 0.001
+# def compact_model(p, t, new_p):
+#     og_loss = loss(p, t)
+#     print(f"OG Loss: {og_loss}")
+#     # Define the lower and upper bounds of the token range
+#     lower_bound = 0.1e9
+#     upper_bound = 1e15
+#     # Set an initial guess for the new token value
+#     new_t = (lower_bound + upper_bound) / 2
+#     # Define a tolerance level for the loss function
+#     tolerance = 0.001
 
-    # Perform binary search over the token range
-    while abs(loss(new_p, new_t) - og_loss) > tolerance:
-        if (lower_bound == upper_bound):
-            return
-        if loss(new_p, new_t) < og_loss:
-            upper_bound = new_t
-        else:
-            lower_bound = new_t
-        new_t = (lower_bound + upper_bound) / 2
-        print(f"lower_bound: {lower_bound}, upper_bound: {upper_bound}, new_t: {new_t}, loss(new_p, new_t): {loss(new_p, new_t)}")
+#     # Perform binary search over the token range
+#     while abs(loss(new_p, new_t) - og_loss) > tolerance:
+#         if (lower_bound == upper_bound):
+#             return
+#         if loss(new_p, new_t) < og_loss:
+#             upper_bound = new_t
+#         else:
+#             lower_bound = new_t
+#         new_t = (lower_bound + upper_bound) / 2
+#         print(f"lower_bound: {lower_bound}, upper_bound: {upper_bound}, new_t: {new_t}, loss(new_p, new_t): {loss(new_p, new_t)}")
 
-    return new_t
+#     return new_t
 
 def chinchilla_model (input_loss): 
     input_flops = ((input_loss - 0.5066)**(1/-0.0737)) * 5.984e22    # Cerebras-GPT equation 1 rebalanced
