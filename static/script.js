@@ -8,15 +8,57 @@ document.addEventListener("keydown", event => {
   }
 });
 
+
+const mode_output_h2 = document.getElementById("output-mode-h2");
+const modeSelector = document.getElementById("mode-selector");
+
+modeSelector.addEventListener("change", () => {
+  if (modeSelector.value === "chinchilla-to-llama") {
+    const checkbox = document.getElementById("is_chinchilla")
+    const parameters = document.getElementById("parameters");
+    const tokens = document.getElementById("trainingTokens");
+    checkbox.checked = true;
+    parameters.value = ""
+    tokens.value = ""
+    mode_output_h2.textContent = "Make it a Llama Style Model";
+    document.querySelectorAll(".chinchilla-to-llama").forEach(element => element.style.display = "inline-block");
+    document.getElementById("results").innerHTML = "";
+    document.getElementById('myChart').style.display = 'none';
+  } else if (modeSelector.value === "llama-to-chinchilla") {
+    const parameters = document.getElementById("parameters");
+    const tokens = document.getElementById("trainingTokens");
+    parameters.value = ""
+    tokens.value = ""
+    mode_output_h2.textContent = "Make it a Chinchilla Style Model";
+    document.querySelectorAll(".chinchilla-to-llama").forEach(element => element.style.display = "none");
+    document.getElementById("results").innerHTML = "";
+    document.getElementById('myChart').style.display = 'none';
+  }
+
+});
+
+
 // Auto fill chinchilla values
 document.getElementById("parameters").addEventListener("input", () => {
-  const checkbox = document.getElementById("is_chinchilla").checked;
-  const parameters = document.getElementById("parameters");
-  const suggestedTokens = document.getElementById("trainingTokens")
-  const suggestedParams = document.getElementById("compactModelParameters")
 
-  suggestedParams.value = parameters.value / 2;
-  if (checkbox) suggestedTokens.value = parameters.value * 20;
+  if (modeSelector.value === "chinchilla-to-llama") {
+    console.log("chinchilla-to-llama")
+    const checkbox = document.getElementById("is_chinchilla").checked;
+    const parameters = document.getElementById("parameters");
+    const suggestedTokens = document.getElementById("trainingTokens")
+    const suggestedParams = document.getElementById("compactModelParameters")
+    suggestedParams.value = parameters.value / 2;
+    if (checkbox) suggestedTokens.value = parameters.value * 20;
+  }
+  
+  else if (modeSelector.value === "llama-to-chinchilla") {
+    console.log("lam to chin")
+    const parameters = document.getElementById("parameters");
+    const suggestedTokens = document.getElementById("trainingTokens")
+    suggestedTokens.value = parameters.value * 100;
+  }
+
+
 
 });
 
@@ -39,6 +81,8 @@ document.getElementById("calculate").addEventListener("click", async () => {
     const trainingTokens = document.getElementById("trainingTokens").value;
     const compactModelParameters = document.getElementById("compactModelParameters").value;
     const inferences = document.getElementById("inferences").value;
+    const mode = modeSelector.value
+
 
     // Get the current scroll position
     scrollPosition = window.scrollY;
@@ -48,46 +92,120 @@ document.getElementById("calculate").addEventListener("click", async () => {
         headers: {
             "Content-Type": "application/json"
         },
-        body: JSON.stringify({ parameters, trainingTokens, compactModelParameters, inferences})
+        body: JSON.stringify({mode, parameters, trainingTokens, compactModelParameters, inferences})
     });
 
-    const data = await response.json();
+    const data = await response.json(); 
 
-    // Display Input Model loss, compute, and cost
-    document.getElementById("estimated-loss").textContent = data.input_model.loss;
-    
-    const costValue = data.input_model.cost;
-    const formattedCostValue = "$" + costValue.toLocaleString();
-    // document.getElementById("cost").textContent = formattedCostValue;
 
-    const inputTrainingFlops = data.input_model.compute;
-    const inputInfFlops = data.input_model.original_inf_cost;
-    const formattedinputTrainingFlops = inputTrainingFlops.toExponential(2);
-    document.getElementById("compute").textContent = formattedinputTrainingFlops;
+    // JS => HTML Content
+    let outputModelHTML = `
+        <h2>Input Model</h2>
+        <ul>
+          <li><strong>🎯 Estimated Loss: </strong>${data.input_model.loss}</li>
+          <li><strong>🧠 Training Flops: </strong> <span id="compute">${data.input_model.compute.toExponential(2)}</span></li>
+          <li><strong>⿹ Parameters:</strong> <span id="new_tokens">${parameters}</span></li>
+          <li><strong>📖 Training Tokens:</strong> <span id="new_tokens">${trainingTokens}</span></li>
+        </ul>
+        <div id="estimates"></div>`
 
-    // Display Compact Model loss, compute, and cost
-    if(data.output_model.found == false) {
-      document.getElementById("new_estimated-loss").textContent = "No model found"
-      document.getElementById("new_compute").textContent = "n/a"
-      // document.getElementById("new_cost").textContent = "n/a"
-      document.getElementById("new_tokens").textContent = "n/a"
-      document.getElementById("otc").textContent = "n/a"
-      document.getElementById("inf_breakeven").textContent = "n/a"
+    // Return error if no model is found and stop rendering 
+    if (!data.output_model.found) {
+      outputModelHTML += `<h2>No Models Found 🫤</h2>`
+      document.getElementById("results").innerHTML = outputModelHTML;
+      return;
     }
 
-    else {
-      const outputTrainingFlops = data.output_model.compute;
-      const outputInfFlops = data.output_model.compact_inf_cost;
-      const costValueNew = data.output_model.cost;
-      const formattedCostValueNew = "$" + costValueNew.toLocaleString();
-      const formattedoutputTrainingFlops = outputTrainingFlops.toExponential(2);
-      document.getElementById("new_estimated-loss").textContent = data.output_model.loss;   
-      document.getElementById("new_compute").textContent = formattedoutputTrainingFlops;
-      // document.getElementById("new_cost").textContent = formattedCostValueNew;
-      document.getElementById("new_tokens").textContent = data.output_model.tokens;
-      document.getElementById("otc").textContent = data.output_model.otc; 
-      document.getElementById("inf_breakeven").textContent = data.output_model.inf_breakeven
+    if (mode === "chinchilla-to-llama") {
 
+      outputModelHTML += `
+        <h2>Output Model</h2>
+        <div id="newModel"></div>
+        <ul>
+        <li><strong>🎯 Estimated Loss:</strong> <span id="new_estimated-loss">${data.output_model.loss}</span></li>`
+
+        if (data.output_model.found) outputModelHTML += 
+          `<li><strong>🧠 Training Flops:</strong> <span id="new_compute">${data.output_model.compute.toExponential(2)}</span></li>`
+        else outputModelHTML += 
+          `<li><strong>🧠 Training Flops:</strong> <span id="new_compute">${data.output_model.compute}</span></li>`
+
+        outputModelHTML += `
+          <li><strong>⿹ Parameters:</strong> <span id="new_tokens">${compactModelParameters}</span></li>
+          <li><strong>📖 Training Tokens:</strong> <span id="new_tokens">${data.output_model.tokens}</span></li>
+        </ul>`
+
+        let model_size_change = Math.round((compactModelParameters - parameters) * 100 / parameters);
+        model_size_change = model_size_change >= 0 ? `+${model_size_change}` : `${model_size_change}`;
+
+        let flops_change = Math.round((data.output_model.compute - data.input_model.compute) * 100 / data.input_model.compute)
+        flops_change = flops_change >= 0 ? `+${flops_change}` : `${flops_change}`;
+
+        let tokens_change = Math.round((data.output_model.tokens - trainingTokens) * 100 / trainingTokens)
+        tokens_change = tokens_change >= 0 ? `+${tokens_change}` : `${tokens_change}`;
+
+        outputModelHTML += `
+        <h2>Comparison</h2>
+          <ul>
+            <li><strong>🧠 Training FLOPs :</strong> <span id="otc">${flops_change}%</span></li>
+            <li><strong>⿹ Parameters: </strong> <span id="otc">${model_size_change}%</span></li>
+            <li><strong>📖 Training Tokens:</strong> <span id="new_tokens">${tokens_change}%</span></li>
+            <li><strong>⚖️ Inference Breakeven:</strong> <span id="inf_breakeven">${data.output_model.inf_breakeven} billion tokens</span></li>
+          </ul>`;
+      }
+
+
+    else if (mode === "llama-to-chinchilla") {
+      outputModelHTML += 
+        `<h2>Output Model:</h2>
+        <div id="newModel"></div>
+        <ul>
+        <li><strong>🎯 Estimated Loss:</strong> <span id="new_estimated-loss">${data.output_model.loss}</span></li>`
+
+        if (data.output_model.found) outputModelHTML += 
+          `<li><strong>🧠 Training Flops:</strong> <span id="new_compute">${data.output_model.compute.toExponential(2)}</span></li>`
+        else outputModelHTML += 
+          `<li><strong>🧠 Training Flops:</strong> <span id="new_compute">${data.output_model.compute}</span></li>`
+
+        outputModelHTML += `
+          <li><strong>⿹ Parameters:</strong> <span id="new_tokens">${data.output_model.parameters}</span></li>
+          <li><strong>📖 Training Tokens:</strong> <span id="new_tokens">${data.output_model.tokens}</span></li>
+        </ul>`
+
+        let model_size_change = Math.round((data.output_model.parameters - parameters) * 100 / parameters);
+        model_size_change = model_size_change >= 0 ? `+${model_size_change}` : `${model_size_change}`;
+
+        let flops_change = Math.round((data.output_model.compute - data.input_model.compute) * 100 / data.input_model.compute)
+        flops_change = flops_change >= 0 ? `+${flops_change}` : `${flops_change}`;
+
+        let tokens_change = Math.round((data.output_model.tokens - trainingTokens) * 100 / trainingTokens)
+        tokens_change = tokens_change >= 0 ? `+${tokens_change}` : `${tokens_change}`;
+
+        outputModelHTML += `
+        <h2>Comparison</h2>
+          <ul>
+            <li><strong>🧠 Training FLOPs :</strong> <span id="otc">${flops_change}%</span></li>
+            <li><strong>⿹ Parameters: </strong> <span id="otc">${model_size_change}%</span></li>
+            <li><strong>📖 Training Tokens:</strong> <span id="new_tokens">${tokens_change}%</span></li>
+            <li><strong>⚖️ Inference Breakeven:</strong> <span id="inf_breakeven">${data.output_model.inf_breakeven} billion tokens</span></li>
+          </ul>`;
+      }
+
+      // Push HTML to results div
+      document.getElementById("results").innerHTML = outputModelHTML;
+
+      const inputTrainingFlops = data.input_model.compute;
+      const outputTrainingFlops = data.output_model.compute;
+      const inputInfFlops = data.input_model.original_inf_cost;
+      const outputInfFlops = data.output_model.output_inf_cost;
+
+      drawChart(inputTrainingFlops, outputTrainingFlops, inputInfFlops, outputInfFlops); 
+      document.getElementById('myChart').style.display = 'block';
+
+
+});
+
+
+function drawChart(inputTrainingFlops, outputTrainingFlops, inputInfFlops, outputInfFlops) {
         // Get the canvas element
       const canvas = document.getElementById('myChart');
 
@@ -100,7 +218,7 @@ document.getElementById("calculate").addEventListener("click", async () => {
       window.chart = new Chart(canvas, {
         type: 'bar',
         data: {
-          labels: ['Input Model', 'Llama Model'],
+          labels: ['Input Model', 'Output Model'],
           datasets: [
             {
               label: 'Training FLOPS',
@@ -168,7 +286,5 @@ document.getElementById("calculate").addEventListener("click", async () => {
           }
         }
       });
-
       window.scrollTo(0, scrollPosition);
-    } 
-});
+}

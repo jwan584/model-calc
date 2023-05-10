@@ -14,40 +14,27 @@
     <div class="container">
         <div class="left">
             <h2>Enter Your Model</h2>
+            <label for="mode-selector">Mode:</label>
+            <select id="mode-selector" name="mode-selector">
+              <option value="chinchilla-to-llama" selected>Chinchilla => Llama</option>
+              <option value="llama-to-chinchilla">Llama => Chinchilla</option>
+            </select>
             <label for="parameters">Parameters (billions):</label>
             <input type="number" id="parameters">
             <label for="trainingTokens">Training Tokens (billions):</label>
             <input type="number" id="trainingTokens">
             <br>
-            <label for="chinchilla" style="display: inline-block;">Chinchilla Optimal:</label>
-            <input type="checkbox" id="is_chinchilla" name="chinchilla" checked>
+            <label class="chinchilla-to-llama" for="chinchilla" style="display: inline-block;">Chinchilla Optimal:</label>
+            <input  class="chinchilla-to-llama" type="checkbox" id="is_chinchilla" name="chinchilla" checked>
             <br><br>
-            <h2>Make it a Llama Style Model</h2>
-            <label for="compactModelParameters">Compact Model Parameters (billions):</label>
-            <input type="number" id="compactModelParameters">
+            <h2 id="output-mode-h2">Make it a Llama Style Model</h2>
+            <label class="chinchilla-to-llama" for="compactModelParameters">Compact Model Parameters (billions):</label>
+            <input class="chinchilla-to-llama" type="number" id="compactModelParameters">
             <label for="inferences">Number of Inferences (billion tokens):</label>
             <input type="number" id="inferences" placeholder="optional">
             <button id="calculate">Calculate</button>
         </div>
-        <div class="right">
-                <h2>Input Model:</h2>
-            <ul>
-              <li><strong>Estimated Loss:</strong> <span id="estimated-loss"></span></li>
-              <li><strong>Training Flops:</strong> <span id="compute"></span></li>
-              <!-- <li><strong>Cost:</strong> <span id="cost"></span></li> -->
-            </ul>
-            <div id="estimates"></div>
-            <h2>Output Model:</h2>
-            <div id="newModel"></div>
-                <ul>
-                  <li><strong>Estimated Loss:</strong> <span id="new_estimated-loss"></span></li>
-                  <li><strong>Training Flops:</strong> <span id="new_compute"></span></li>
-                  <li><strong>Training Tokens:</strong> <span id="new_tokens"></span></li>
-                  <!-- <li><strong>Cost:</strong> <span id="new_cost"></span></li> -->
-                  <li><strong>Training Cost Increase:</strong> <span id="otc"></span></li>
-                  <li><strong>Inference Breakeven:</strong> <span id="inf_breakeven"></span></li>
-              </ul>
-        </div>
+    <div id="results"></div>
     </div>
     <div class="chart-container">
     <canvas id="myChart"></canvas>
