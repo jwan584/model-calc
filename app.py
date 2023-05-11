@@ -4,7 +4,7 @@ from flask import Flask, render_template, request, jsonify
 
 def loss(p, t):
     l = (1 + 0.023 * math.log(math.sqrt(20 / (t / p))) ** 2) * (((6 * t * p) / 5.984E+22) ** -0.0737 + 0.5066)
-    return(round(l,3))
+    return(round(l,5))
 
 def flops(p, t):
     return 6 * p * t
@@ -20,45 +20,42 @@ def training_cost(f):
 
 
 def compact_model(p, t, new_p):
-    new_t = None
     og_loss = loss(p, t)
-    token_range = np.arange(0.1e9, 30000e9, 0.1e9)
+    print("og_loss = ", og_loss)
 
-    for tr in token_range:
-        new_loss = loss(new_p, tr)
-        if new_loss <= og_loss:
-            new_t = tr
-            break
+    # Define the lower and upper bounds of the token range
+    lower_bound = new_p         # lower bound is 1 token per param
+    upper_bound = 1e18          # really high upper bound in case P is high
 
-    if new_t is None:
-        print('no model found')
-        return None
+    # Loss function has a divergent tail. Prune the tail iteratively by 10x at a time
+    upper_loss = loss(new_p, upper_bound) 
+    upper_bound_new = upper_bound * 0.1
+    upper_loss_new = loss (new_p, upper_bound_new)
+    while (upper_loss_new < upper_loss):
+        upper_bound = upper_bound_new
+        upper_bound_new *= 0.1 
+        upper_loss = loss(new_p, upper_bound) 
+        upper_loss_new = loss (new_p, upper_bound_new)
+        print(f"upper t = {upper_bound:.3e}, loss = {upper_loss}, lower t = {upper_bound_new:.3e}, loss = {upper_loss_new}")
+        t_values = np.linspace(lower_bound, upper_bound, 1000)
+        loss_values = [loss(p, t) for t in t_values]
+    
+    # Perform binary search over monotonic pruned range
+    tolerance = 0.0001
+    new_t = (lower_bound + upper_bound) / 2
+    while abs(loss(new_p, new_t) - og_loss) > tolerance:
+        if lower_bound == upper_bound:
+            print('no model found')
+            return None
+        if loss(new_p, new_t) < og_loss:
+            upper_bound = new_t
+        else:
+            lower_bound = new_t
+        new_t = (lower_bound + upper_bound) / 2
+        print(f"lower_bound: {lower_bound:.3e}, upper_bound: {upper_bound:.3}, new_t: {new_t:.3e}, loss(new_p, new_t): {loss(new_p, new_t)}")
 
     return new_t
 
-# def compact_model(p, t, new_p):
-#     og_loss = loss(p, t)
-#     print(f"OG Loss: {og_loss}")
-#     # Define the lower and upper bounds of the token range
-#     lower_bound = 0.1e9
-#     upper_bound = 1e15
-#     # Set an initial guess for the new token value
-#     new_t = (lower_bound + upper_bound) / 2
-#     # Define a tolerance level for the loss function
-#     tolerance = 0.001
-
-#     # Perform binary search over the token range
-#     while abs(loss(new_p, new_t) - og_loss) > tolerance:
-#         if (lower_bound == upper_bound):
-#             return
-#         if loss(new_p, new_t) < og_loss:
-#             upper_bound = new_t
-#         else:
-#             lower_bound = new_t
-#         new_t = (lower_bound + upper_bound) / 2
-#         print(f"lower_bound: {lower_bound}, upper_bound: {upper_bound}, new_t: {new_t}, loss(new_p, new_t): {loss(new_p, new_t)}")
-
-#     return new_t
 
 def chinchilla_model (input_loss): 
     input_flops = ((input_loss - 0.5066)**(1/-0.0737)) * 5.984e22    # Cerebras-GPT equation 1 rebalanced
@@ -120,7 +117,7 @@ def calculate():
             return jsonify({"input_model": input_model, "output_model": output_model})
 
 
-        compact_model_tokens_str = (compact_model_tokens/1e9)
+        compact_model_tokens_str = int(compact_model_tokens/1e9)
         compact_model_loss = loss(compact_model_parameters, compact_model_tokens)
         compact_model_flops = flops(compact_model_parameters, compact_model_tokens)
 
@@ -156,7 +153,7 @@ def calculate():
         print('chinchilla mode');
 
         chinchilla_params, chinchilla_tokens = chinchilla_model(original_loss)
-        chinchilla_tokens_str = str(round(chinchilla_tokens/1e9, 0))
+        chinchilla_tokens_str = int(chinchilla_tokens/1e9)
         chinchilla_params_str = str(round(chinchilla_params/1e9, 0))
         chinchilla_loss = loss(chinchilla_params, chinchilla_tokens)
         chinchilla_flops = flops (chinchilla_params, chinchilla_tokens)
@@ -165,7 +162,7 @@ def calculate():
         chinchilla_training_cost = training_cost(chinchilla_flops)
         chinchilla_inf_cost = 2 * chinchilla_params * inferences
         inf_breakeven_tokens = (original_flops - chinchilla_flops) / (2 * (chinchilla_params - parameters))
-        inf_breakeven_tokens_str = str(round(inf_breakeven_tokens/1e9, 0))
+        inf_breakeven_tokens_str = int(inf_breakeven_tokens/1e9)
         model_found = True
 
         input_model = { "loss": original_loss,

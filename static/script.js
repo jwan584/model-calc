@@ -14,6 +14,7 @@ const modeSelector = document.getElementById("mode-selector");
 
 modeSelector.addEventListener("change", () => {
   if (modeSelector.value === "chinchilla-to-llama") {
+    document.getElementById("h1_name").innerText = "🐭Chinchilla2Llama🦙";
     const checkbox = document.getElementById("is_chinchilla")
     const parameters = document.getElementById("parameters");
     const tokens = document.getElementById("trainingTokens");
@@ -25,6 +26,7 @@ modeSelector.addEventListener("change", () => {
     document.getElementById("results").innerHTML = "";
     document.getElementById('myChart').style.display = 'none';
   } else if (modeSelector.value === "llama-to-chinchilla") {
+    document.getElementById("h1_name").innerText = "🦙Llama2Chinchilla🐭";
     const parameters = document.getElementById("parameters");
     const tokens = document.getElementById("trainingTokens");
     parameters.value = ""
@@ -104,8 +106,8 @@ document.getElementById("calculate").addEventListener("click", async () => {
         <ul>
           <li><strong>🎯 Estimated Loss: </strong>${data.input_model.loss}</li>
           <li><strong>🧠 Training Flops: </strong> <span id="compute">${data.input_model.compute.toExponential(2)}</span></li>
-          <li><strong>⿹ Parameters:</strong> <span id="new_tokens">${parameters}</span></li>
-          <li><strong>📖 Training Tokens:</strong> <span id="new_tokens">${trainingTokens}</span></li>
+          <li><strong>⿹ Parameters:</strong> <span id="new_tokens">${parameters} billion</span></li>
+          <li><strong>📖 Training Tokens:</strong> <span id="new_tokens">${trainingTokens} billion</span></li>
         </ul>
         <div id="estimates"></div>`
 
@@ -130,8 +132,8 @@ document.getElementById("calculate").addEventListener("click", async () => {
           `<li><strong>🧠 Training Flops:</strong> <span id="new_compute">${data.output_model.compute}</span></li>`
 
         outputModelHTML += `
-          <li><strong>⿹ Parameters:</strong> <span id="new_tokens">${compactModelParameters}</span></li>
-          <li><strong>📖 Training Tokens:</strong> <span id="new_tokens">${data.output_model.tokens}</span></li>
+          <li><strong>⿹ Parameters:</strong> <span id="new_tokens">${compactModelParameters} billion</span></li>
+          <li><strong>📖 Training Tokens:</strong> <span id="new_tokens">${data.output_model.tokens} billion</span></li>
         </ul>`
 
         let model_size_change = Math.round((compactModelParameters - parameters) * 100 / parameters);
@@ -156,7 +158,7 @@ document.getElementById("calculate").addEventListener("click", async () => {
 
     else if (mode === "llama-to-chinchilla") {
       outputModelHTML += 
-        `<h2>Output Model:</h2>
+        `<h2>Output Model</h2>
         <div id="newModel"></div>
         <ul>
         <li><strong>🎯 Estimated Loss:</strong> <span id="new_estimated-loss">${data.output_model.loss}</span></li>`
@@ -167,8 +169,8 @@ document.getElementById("calculate").addEventListener("click", async () => {
           `<li><strong>🧠 Training Flops:</strong> <span id="new_compute">${data.output_model.compute}</span></li>`
 
         outputModelHTML += `
-          <li><strong>⿹ Parameters:</strong> <span id="new_tokens">${data.output_model.parameters}</span></li>
-          <li><strong>📖 Training Tokens:</strong> <span id="new_tokens">${data.output_model.tokens}</span></li>
+          <li><strong>⿹ Parameters:</strong> <span id="new_tokens">${data.output_model.parameters} billion</span></li>
+          <li><strong>📖 Training Tokens:</strong> <span id="new_tokens">${data.output_model.tokens} billion</span></li>
         </ul>`
 
         let model_size_change = Math.round((data.output_model.parameters - parameters) * 100 / parameters);
