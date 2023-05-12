@@ -117,6 +117,7 @@ document.getElementById("calculate").addEventListener("click", async () => {
     if (!data.output_model.found) {
       outputModelHTML += `<h2>No Models Found 🫤</h2>`
       document.getElementById("results").innerHTML = outputModelHTML;
+      document.getElementById('myChart').style.display = 'none';
       return;
     }
 
