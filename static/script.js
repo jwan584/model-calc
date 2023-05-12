@@ -15,6 +15,7 @@ const modeSelector = document.getElementById("mode-selector");
 modeSelector.addEventListener("change", () => {
   if (modeSelector.value === "chinchilla-to-llama") {
     document.getElementById("h1_name").innerText = "🐭Chinchilla2Llama🦙";
+    document.title = "🐭Chinchilla2Llama🦙";
     const checkbox = document.getElementById("is_chinchilla")
     const parameters = document.getElementById("parameters");
     const tokens = document.getElementById("trainingTokens");
@@ -27,6 +28,7 @@ modeSelector.addEventListener("change", () => {
     document.getElementById('myChart').style.display = 'none';
   } else if (modeSelector.value === "llama-to-chinchilla") {
     document.getElementById("h1_name").innerText = "🦙Llama2Chinchilla🐭";
+    document.title = "🐭Chinchilla2Llama🦙";
     const parameters = document.getElementById("parameters");
     const tokens = document.getElementById("trainingTokens");
     parameters.value = ""
@@ -289,4 +291,42 @@ function drawChart(inputTrainingFlops, outputTrainingFlops, inputInfFlops, outpu
         }
       });
       window.scrollTo(0, scrollPosition);
+}
+
+
+
+// Get modal element
+const modal = document.getElementById('modal');
+
+// Get open modal button
+const openModalButton = document.getElementById('about-link');
+
+// Get close button
+const closeButton = document.querySelector('.close');
+
+// Listen for open click
+openModalButton.addEventListener('click', openModal);
+
+// Listen for close click
+closeButton.addEventListener('click', closeModal);
+
+// Listen for outside click
+window.addEventListener('click', outsideClick);
+
+// Function to open modal
+function openModal(e) {
+    e.preventDefault();
+    modal.classList.add('show');
+}
+
+// Function to close modal
+function closeModal() {
+    modal.classList.remove('show');
+}
+
+// Function to close modal if outside click
+function outsideClick(e) {
+    if (e.target == modal) {
+        closeModal();
+    }
 }

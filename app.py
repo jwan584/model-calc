@@ -127,8 +127,12 @@ def calculate():
         over_training_cost = f"{over_training_cost:.1f}%"
 
         # Num of tokens needed to breakeven in total training + inf cost
-        inf_breakeven_tokens = (compact_model_flops - original_flops) / (2 * (parameters - compact_model_parameters))
-        inf_breakeven_tokens_str = (round(inf_breakeven_tokens/1e9,0))
+        if parameters == compact_model_parameters:
+            inf_breakeven_tokens = 0
+            inf_breakeven_tokens_str = 0
+        else:    
+            inf_breakeven_tokens = (compact_model_flops - original_flops) / (2 * (parameters - compact_model_parameters))
+            inf_breakeven_tokens_str = (round(inf_breakeven_tokens/1e9,0))
 
         output_inf_cost = 2 * compact_model_parameters * inferences
 
@@ -161,8 +165,15 @@ def calculate():
         flops_decrease = f"{flops_decrease:.1f}%"
         chinchilla_training_cost = training_cost(chinchilla_flops)
         chinchilla_inf_cost = 2 * chinchilla_params * inferences
-        inf_breakeven_tokens = (original_flops - chinchilla_flops) / (2 * (chinchilla_params - parameters))
-        inf_breakeven_tokens_str = int(inf_breakeven_tokens/1e9)
+
+        if parameters == chinchilla_params:
+            inf_breakeven_tokens = 0
+            inf_breakeven_tokens_str = 0
+        else:    
+            inf_breakeven_tokens = (original_flops - chinchilla_flops) / (2 * (chinchilla_params - parameters))
+            inf_breakeven_tokens_str = int(inf_breakeven_tokens/1e9)
+
+      
         model_found = True
 
         input_model = { "loss": original_loss,
