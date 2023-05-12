@@ -134,6 +134,9 @@ def calculate():
             inf_breakeven_tokens = (compact_model_flops - original_flops) / (2 * (parameters - compact_model_parameters))
             inf_breakeven_tokens_str = (round(inf_breakeven_tokens/1e9,0))
 
+        dau = int(inf_breakeven_tokens / (1000 * 365)) # daily active users, assuming 1000 tokens per day
+
+
         output_inf_cost = 2 * compact_model_parameters * inferences
 
         input_model = { "loss": original_loss,
@@ -147,7 +150,8 @@ def calculate():
                         "cost": compact_model_cost,
                         "otc":over_training_cost,
                         "output_inf_cost":output_inf_cost,
-                        "inf_breakeven":inf_breakeven_tokens_str}
+                        "inf_breakeven":inf_breakeven_tokens_str,
+                        "dau": dau}
         return jsonify({"input_model": input_model, "output_model": output_model})
 
 
@@ -173,6 +177,7 @@ def calculate():
             inf_breakeven_tokens = (original_flops - chinchilla_flops) / (2 * (chinchilla_params - parameters))
             inf_breakeven_tokens_str = int(inf_breakeven_tokens/1e9)
 
+        dau = int(inf_breakeven_tokens / (1000 * 365)) # daily active users, assuming 1000 tokens per day
       
         model_found = True
 
@@ -188,7 +193,8 @@ def calculate():
                         "cost": chinchilla_training_cost,
                         "otc":flops_decrease,
                         "output_inf_cost":chinchilla_inf_cost,
-                        "inf_breakeven":inf_breakeven_tokens_str}
+                        "inf_breakeven":inf_breakeven_tokens_str,
+                        "dau": dau}
         return jsonify({"input_model": input_model, "output_model": output_model})
 
 

@@ -49,9 +49,9 @@
             <span class="close">&times;</span>
             <h2>About</h2>
             <p>This calculator estimates the accuracy of large language models based on parameter size and data tokens. It uses the scaling laws published in the <a href="https://www.cerebras.net/blog/cerebras-gpt-a-family-of-open-compute-efficient-large-language-models/">Cerebras-GPT paper</a>. The scaling law is applicable to LLM trained on the Pile dataset.</p>   
-            <p>The tool allows you to choose between two distinct training styles - Chinchilla and Llama.</p>
+            <p>The tool allows you to choose between two distinct training styles: Chinchilla and Llama.</p>
             <p>The Chinchilla style uses a ratio of 20 tokens per parameter, producing a model with the least loss for a given computational capacity.</p>
-            <p>On the other hand, the Llama style utilizes a significantly higher ratio of tokens per parameter. While this results in more compact models with improved accuracy, they demand more computational resources (FLOPs) during training. Although Llama models, being smaller, are more cost-efficient during inference, they require billions of inference tokens before the lower inference cost compensates for the higher initial training cost. This trade-off is shown in the "Inference Breakeven" figure.</p>
+            <p>On the other hand, the Llama style utilizes a significantly higher ratio of tokens per parameter. While this results in more compact models with improved accuracy, they demand more computational resources during training. Although Llama models, being smaller, are more cost-efficient during inference, they require billions of inference tokens before the lower inference cost compensates for the higher initial training cost. This trade-off is shown in the "Inferences to Breakeven" figure. The "Users to Breakeven" figure assumes a single user generates 1k tokens per day for a year.</p>
             <h2>Contact<h2>
             <p>James Wang <a href="https://twitter.com/draecomino" target="_blank"> @draecomino</a></p>
         </div>

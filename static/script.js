@@ -125,7 +125,6 @@ document.getElementById("calculate").addEventListener("click", async () => {
 
       outputModelHTML += `
         <h2>Output Model</h2>
-        <div id="newModel"></div>
         <ul>
         <li><strong>🎯 Estimated Loss:</strong> <span id="new_estimated-loss">${data.output_model.loss}</span></li>`
 
@@ -154,7 +153,8 @@ document.getElementById("calculate").addEventListener("click", async () => {
             <li><strong>🧠 Training FLOPs :</strong> <span id="otc">${flops_change}%</span></li>
             <li><strong>⿹ Parameters: </strong> <span id="otc">${model_size_change}%</span></li>
             <li><strong>📖 Training Tokens:</strong> <span id="new_tokens">${tokens_change}%</span></li>
-            <li><strong>⚖️ Inference Breakeven:</strong> <span id="inf_breakeven">${data.output_model.inf_breakeven} billion tokens</span></li>
+            <li><strong>⚖️ Inferences to Breakeven:</strong> <span id="inf_breakeven">${data.output_model.inf_breakeven} billion tokens 
+            <li><strong>👥 Users to Breakeven:</strong> <span id="inf_breakeven">${(data.output_model.dau).toLocaleString()} daily active users
           </ul>`;
       }
 
@@ -162,7 +162,6 @@ document.getElementById("calculate").addEventListener("click", async () => {
     else if (mode === "llama-to-chinchilla") {
       outputModelHTML += 
         `<h2>Output Model</h2>
-        <div id="newModel"></div>
         <ul>
         <li><strong>🎯 Estimated Loss:</strong> <span id="new_estimated-loss">${data.output_model.loss}</span></li>`
 
@@ -192,6 +191,7 @@ document.getElementById("calculate").addEventListener("click", async () => {
             <li><strong>⿹ Parameters: </strong> <span id="otc">${model_size_change}%</span></li>
             <li><strong>📖 Training Tokens:</strong> <span id="new_tokens">${tokens_change}%</span></li>
             <li><strong>⚖️ Inference Breakeven:</strong> <span id="inf_breakeven">${data.output_model.inf_breakeven} billion tokens</span></li>
+            <li><strong>👥 Users to Breakeven:</strong> <span id="inf_breakeven">${(data.output_model.dau).toLocaleString()} daily active users
           </ul>`;
       }
 
