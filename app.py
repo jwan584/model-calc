@@ -162,7 +162,7 @@ def calculate():
 
         chinchilla_params, chinchilla_tokens = chinchilla_model(original_loss)
         chinchilla_tokens_str = int(chinchilla_tokens/1e9)
-        chinchilla_params_str = str(round(chinchilla_params/1e9, 0))
+        chinchilla_params_str = str(round(chinchilla_params/1e9, 2))
         chinchilla_loss = loss(chinchilla_params, chinchilla_tokens)
         chinchilla_flops = flops (chinchilla_params, chinchilla_tokens)
         flops_decrease = ((original_flops - chinchilla_flops) / original_flops) * 100 

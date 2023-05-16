@@ -14,8 +14,6 @@ const modeSelector = document.getElementById("mode-selector");
 
 modeSelector.addEventListener("change", () => {
   if (modeSelector.value === "chinchilla-to-llama") {
-    document.getElementById("h1_name").innerText = "🐭Chinchilla2Llama🦙";
-    document.title = "🐭Chinchilla2Llama🦙";
     const checkbox = document.getElementById("is_chinchilla")
     const parameters = document.getElementById("parameters");
     const tokens = document.getElementById("trainingTokens");
@@ -27,8 +25,6 @@ modeSelector.addEventListener("change", () => {
     document.getElementById("results").innerHTML = "";
     document.getElementById('myChart').style.display = 'none';
   } else if (modeSelector.value === "llama-to-chinchilla") {
-    document.getElementById("h1_name").innerText = "🦙Llama2Chinchilla🐭";
-    document.title = "🐭Chinchilla2Llama🦙";
     const parameters = document.getElementById("parameters");
     const tokens = document.getElementById("trainingTokens");
     parameters.value = ""
