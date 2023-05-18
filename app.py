@@ -70,7 +70,7 @@ def index():
     models_file_path = os.path.join(script_dir, 'models.csv')
 
     models = []
-    with open('models.csv', 'r') as file:
+    with open(models_file_path, 'r') as file:
         reader = csv.DictReader(file)
         for row in reader:
             models.append(row)
