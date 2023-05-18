@@ -1,4 +1,4 @@
-import math, csv
+import math, csv, os
 import numpy as np
 from flask import Flask, render_template, request, jsonify
 
@@ -64,6 +64,10 @@ app = Flask(__name__, static_folder="static", template_folder="templates")
 
 @app.route("/")
 def index():
+
+     # Path to the script & CSV
+    script_dir = os.path.dirname(__file__)
+    models_file_path = os.path.join(script_dir, 'models.csv')
 
     models = []
     with open('models.csv', 'r') as file:
@@ -181,7 +185,7 @@ def calculate():
 
 
 if __name__ == "__main__":
-    app.run(port=8080, debug=True)
+    app.run(debug=True)
 
 
 
