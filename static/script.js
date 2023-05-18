@@ -88,6 +88,20 @@ document.getElementById("calculate").addEventListener("click", async () => {
 
   const data = await response.json(); 
 
+  let outputModelHTML = '';
+  let explainer = ""; 
+
+  // Return error if no model is found and stop rendering 
+  if (!data.found) {
+    outputModelHTML += "<h4>A  " + params2 + " billion parameter model cannot reach the loss of Model 1 with any amount of training data. Increase the model size and try again.</h4>"
+    document.getElementById("results").innerHTML = outputModelHTML;
+    document.getElementById('myChart').style.display = 'none';
+    total_compute_cost.style.display = "none"
+    return;
+  }
+
+
+
 
   console.log(mode.value)
   if (mode.value === "iso_loss")
@@ -116,15 +130,13 @@ document.getElementById("calculate").addEventListener("click", async () => {
   flops_change = flops_change > 0 ? `+${flops_change}` : `${flops_change}`;
   memory_change = memory_change > 0 ? `+${memory_change}` : `${memory_change}`;
 
-  let explainer = ""; 
 
-  let outputModelHTML = '';
 
   console.log(inf_breakeven_tokens)
 
 
   if (mode.value === "iso_loss")
-    explainer = "To achieve the same loss as Model 1, Model 2 with " + params2 + "B parameters would need to be trained with " + tokens2 + "B tokens.";
+    explainer = "To achieve the same loss as Model 1, Model 2 with " + params2 + "B parameters would need to be trained with " + tokens2 + "B tokens. ";
 
   if (inf_breakeven_tokens != "0")
     explainer += "Model 1 and Model 2 achieve total compute breakeven after " + inf_breakeven_tokens + " billion inference tokens."

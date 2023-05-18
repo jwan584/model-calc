@@ -103,6 +103,8 @@ def calculate():
         model2_flops = flops(params2, tokens2)
         model1_inf_flops = 2 * params1 * inf1 
         model2_inf_flops = 2 * params2 * inf2 
+
+        model_found = True;
         
         # Num of tokens needed to breakeven in total training + inf cost
         if params1 == params2:
@@ -113,6 +115,7 @@ def calculate():
             inf_breakeven_tokens_str = (round(inf_breakeven_tokens/1e9,0))
 
         response = {
+            "found":model_found,
             "model1_loss": model1_loss,
             "model2_loss": model2_loss,
             "model1_flops": model1_flops,
@@ -146,7 +149,8 @@ def calculate():
         model_found = True
         if tokens2 is None:
             model_found = False
-            response = {"model1_loss": model1_loss,
+            response = {"found":model_found,
+                        "model1_loss": model1_loss,
                         "model1_flops": model1_flops,
                         "model1_inf_flops":model1_inf_flops}
             return jsonify(response)
@@ -169,6 +173,7 @@ def calculate():
         # dau = int(inf_breakeven_tokens / (1000 * 365)) # daily active users, assuming 1000 tokens per day
 
         response = {
+            "found":model_found,
             "tokens2": tokens2_str,
             "model1_loss": model1_loss,
             "model2_loss": model2_loss,
