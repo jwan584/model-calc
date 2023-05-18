@@ -41,27 +41,27 @@
                   <td>
                     <select id="model1_list">
                         {% for item in models %}
-                            <option value="{{item.name}}">{{item.name}}</option>
+                             <option value="{{ item.name }}" {% if item.name == 'Cerebras-GPT 1.3B' %}selected{% endif %}>{{ item.name }}</option>
                         {% endfor %}
                     </select>
                   </td>
                   <td>
                     <select id="model2_list">
                         {% for item in models %}
-                            <option value="{{item.name}}">{{item.name}}</option>
+                            <option value="{{ item.name }}" {% if item.name == 'Pythia 1.4B' %}selected{% endif %}>{{ item.name }}</option>
                         {% endfor %}
                     </select>
                   </td>
                 </tr>
                   <tr>
                     <td>Parameters (B):</td>
-                    <td><input type="number" id="params1" value="10"></td>
-                    <td><input type="number" id="params2" value="5"></td>
+                    <td><input type="number" id="params1"></td>
+                    <td><input type="number" id="params2"></td>
                   </tr>
                   <tr>
                     <td>Tokens (B):</td>
-                    <td><input type="number" id="tokens1" value="200"></td>
-                    <td><input type="text" id="tokens2" value="400"></td>
+                    <td><input type="number" id="tokens1"></td>
+                    <td><input type="text" id="tokens2"></td>
                   </tr>
                   <tr>
                     <td>Inferences (B):</td>
@@ -75,6 +75,7 @@
         </div>
     </div>
     <div id="results"></div>
+        <div id="results_inner">
     <div id="total_compute_cost">
         <h2>Total Compute Cost</h2>
             <canvas id="myChart"></canvas>

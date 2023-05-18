@@ -21,7 +21,7 @@ $(document).ready(function() {
             $("#params1").val("");
             $("#tokens1").val("");
         }
-    });
+    }).change();
 
     $("#model2_list").change(function() {
         var selectedValue = $(this).val();
@@ -39,7 +39,25 @@ $(document).ready(function() {
             $("#params2").val("");
             $("#tokens2").val("");
         }
-    });
+    }).change();
+
+    const params1 = document.getElementById("params1");
+    const tokens1 = document.getElementById("tokens1");
+    const params2 = document.getElementById("params2");
+    const tokens2 = document.getElementById("tokens2");
+    const model1_list = document.getElementById("model1_list");
+    const model2_list = document.getElementById("model2_list");
+
+    // Set model1_list to "Custom" when params1 or tokens1 is edited
+    params1.oninput = tokens1.oninput = function() {
+        model1_list.value = "Custom";
+    }
+
+    // Set model2_list to "Custom" when params2 or tokens2 is edited
+    params2.oninput = tokens2.oninput = function() {
+        model2_list.value = "Custom";
+    }
+
 
 });
 
@@ -50,11 +68,14 @@ mode.addEventListener("change", function () {
   if (mode.value === "iso_loss") {
     tokens2.value = "🧙✨";
     tokens2.disabled = true;
+    model2_list.value = "Custom";
+    document.getElementById("params2").value = "";
+
   } else {
     tokens2.disabled = false;
+    document.getElementById("tokens2").value = "";
   }
 });
-
 
 
 document.addEventListener("keydown", event => {
@@ -113,10 +134,10 @@ document.getElementById("calculate").addEventListener("click", async () => {
   const model2_flops = data.model2_flops.toExponential(2)
   const model1_inf_flops = data.model1_inf_flops.toExponential(2)
   const model2_inf_flops = data.model2_inf_flops.toExponential(2)
-  const inf_breakeven_tokens = Math.abs(data.inf_breakeven_tokens)
+  const inf_breakeven_tokens = (Math.abs(data.inf_breakeven_tokens)).toLocaleString();
 
-  const memory1 = params1 * 1.2
-  const memory2 = params2 * 1.2
+  const memory1 = (params1 * 1.2).toFixed(1)
+  const memory2 = (params2 * 1.2).toFixed(1)
 
   let params_change = ((params2 - params1) / params1 * 100).toFixed(1)
   let tokens_change = ((tokens2 - tokens1) / tokens1 * 100).toFixed(1)
@@ -146,7 +167,6 @@ document.getElementById("calculate").addEventListener("click", async () => {
 
    outputModelHTML = `
       <h2>Results</h2>
-      <p>${explainer}</p>
       <table id="output_table">
           <thead>
               <tr>
@@ -188,7 +208,8 @@ document.getElementById("calculate").addEventListener("click", async () => {
                   <td>${memory_change}%</td>
               </tr>
           </tbody>
-      </table>`; 
+      </table>
+      <p>${explainer}</p>`;
 
     // Push HTML to results div
     document.getElementById("results").innerHTML = outputModelHTML;
@@ -203,112 +224,6 @@ document.getElementById("calculate").addEventListener("click", async () => {
     document.getElementById('myChart').style.display = 'block';
 
 });
-
-
-
-
-  // let model_size_change = Math.round((compactModelParameters - parameters) * 100 / parameters);
-  //   model_size_change = model_size_change >= 0 ? `+${model_size_change}` : `${model_size_change}`;
-
-  // let flops_change = Math.round((data.output_model.compute - data.input_model.compute) * 100 / data.input_model.compute)
-  // flops_change = flops_change >= 0 ? `+${flops_change}` : `${flops_change}`;
-
-  // let tokens_change = Math.round((data.output_model.tokens - trainingTokens) * 100 / trainingTokens)
-  // tokens_change = tokens_change >= 0 ? `+${tokens_change}` : `${tokens_change}`;
-
-
-    // Return error if no model is found and stop rendering 
-    // if (!data.output_model.found) {
-    //   outputModelHTML += `<h2>No Models Found 🫤</h2>`
-    //   document.getElementById("results").innerHTML = outputModelHTML;
-    //   document.getElementById('myChart').style.display = 'none';
-    //   return;
-    // }
-
-    // if (mode === "chinchilla-to-llama") {
-
-    //   outputModelHTML += `
-    //     <h2>Output Model</h2>
-    //     <ul>
-    //     <li><strong>🎯 Estimated Loss:</strong> <span id="new_estimated-loss">${data.output_model.loss}</span></li>`
-
-    //     if (data.output_model.found) outputModelHTML += 
-    //       `<li><strong>🧠 Training Flops:</strong> <span id="new_compute">${data.output_model.compute.toExponential(2)}</span></li>`
-    //     else outputModelHTML += 
-    //       `<li><strong>🧠 Training Flops:</strong> <span id="new_compute">${data.output_model.compute}</span></li>`
-
-    //     outputModelHTML += `
-    //       <li><strong>⿹ Parameters:</strong> <span id="new_tokens">${compactModelParameters} billion</span></li>
-    //       <li><strong>📖 Training Tokens:</strong> <span id="new_tokens">${data.output_model.tokens} billion</span></li>
-    //     </ul>`
-
-    //     let model_size_change = Math.round((compactModelParameters - parameters) * 100 / parameters);
-    //     model_size_change = model_size_change >= 0 ? `+${model_size_change}` : `${model_size_change}`;
-
-    //     let flops_change = Math.round((data.output_model.compute - data.input_model.compute) * 100 / data.input_model.compute)
-    //     flops_change = flops_change >= 0 ? `+${flops_change}` : `${flops_change}`;
-
-    //     let tokens_change = Math.round((data.output_model.tokens - trainingTokens) * 100 / trainingTokens)
-    //     tokens_change = tokens_change >= 0 ? `+${tokens_change}` : `${tokens_change}`;
-
-    //     outputModelHTML += `
-    //     <h2>Comparison</h2>
-    //       <ul>
-    //         <li><strong>🧠 Training FLOPs :</strong> <span id="otc">${flops_change}%</span></li>
-    //         <li><strong>⿹ Parameters: </strong> <span id="otc">${model_size_change}%</span></li>
-    //         <li><strong>📖 Training Tokens:</strong> <span id="new_tokens">${tokens_change}%</span></li>
-    //         <li><strong>⚖️ Inferences to Breakeven:</strong> <span id="inf_breakeven">${data.output_model.inf_breakeven} billion tokens 
-    //         <li><strong>👥 Users to Breakeven:</strong> <span id="inf_breakeven">${(data.output_model.dau).toLocaleString()} daily active users
-    //       </ul>`;
-    //   }
-
-
-    // else if (mode === "llama-to-chinchilla") {
-    //   outputModelHTML += 
-    //     `<h2>Output Model</h2>
-    //     <ul>
-    //     <li><strong>🎯 Estimated Loss:</strong> <span id="new_estimated-loss">${data.output_model.loss}</span></li>`
-
-    //     if (data.output_model.found) outputModelHTML += 
-    //       `<li><strong>🧠 Training Flops:</strong> <span id="new_compute">${data.output_model.compute.toExponential(2)}</span></li>`
-    //     else outputModelHTML += 
-    //       `<li><strong>🧠 Training Flops:</strong> <span id="new_compute">${data.output_model.compute}</span></li>`
-
-    //     outputModelHTML += `
-    //       <li><strong>⿹ Parameters:</strong> <span id="new_tokens">${data.output_model.parameters} billion</span></li>
-    //       <li><strong>📖 Training Tokens:</strong> <span id="new_tokens">${data.output_model.tokens} billion</span></li>
-    //     </ul>`
-
-    //     let model_size_change = Math.round((data.output_model.parameters - parameters) * 100 / parameters);
-    //     model_size_change = model_size_change >= 0 ? `+${model_size_change}` : `${model_size_change}`;
-
-    //     let flops_change = Math.round((data.output_model.compute - data.input_model.compute) * 100 / data.input_model.compute)
-    //     flops_change = flops_change >= 0 ? `+${flops_change}` : `${flops_change}`;
-
-    //     let tokens_change = Math.round((data.output_model.tokens - trainingTokens) * 100 / trainingTokens)
-    //     tokens_change = tokens_change >= 0 ? `+${tokens_change}` : `${tokens_change}`;
-
-    //     outputModelHTML += `
-    //     <h2>Comparison</h2>
-    //       <ul>
-    //         <li><strong>🧠 Training FLOPs :</strong> <span id="otc">${flops_change}%</span></li>
-    //         <li><strong>⿹ Parameters: </strong> <span id="otc">${model_size_change}%</span></li>
-    //         <li><strong>📖 Training Tokens:</strong> <span id="new_tokens">${tokens_change}%</span></li>
-    //         <li><strong>⚖️ Inference Breakeven:</strong> <span id="inf_breakeven">${data.output_model.inf_breakeven} billion tokens</span></li>
-    //         <li><strong>👥 Users to Breakeven:</strong> <span id="inf_breakeven">${(data.output_model.dau).toLocaleString()} daily active users
-    //       </ul>`;
-    //   }
-
-
-
-      // const inputTrainingFlops = data.input_model.compute;
-      // const outputTrainingFlops = data.output_model.compute;
-      // const inputInfFlops = data.input_model.original_inf_cost;
-      // const outputInfFlops = data.output_model.output_inf_cost;
-
-      // drawChart(inputTrainingFlops, outputTrainingFlops, inputInfFlops, outputInfFlops); 
-      // document.getElementById('myChart').style.display = 'block';
-
 
 
 function drawChart(inputTrainingFlops, outputTrainingFlops, inputInfFlops, outputInfFlops) {

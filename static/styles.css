@@ -59,8 +59,8 @@ div {
 }
 
 input:disabled {
-  background-color: #888;
-  color: #555;
+  background-color: #5A5A5A;
+  color: #0000FF;
   cursor: not-allowed;
 }
 
