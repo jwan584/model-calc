@@ -1,10 +1,10 @@
-import math
+import math, csv
 import numpy as np
 from flask import Flask, render_template, request, jsonify
 
 def loss(p, t):
     l = (1 + 0.023 * math.log(math.sqrt(20 / (t / p))) ** 2) * (((6 * t * p) / 5.984E+22) ** -0.0737 + 0.5066)
-    return(round(l,5))
+    return(round(l,4))
 
 def flops(p, t):
     return 6 * p * t
@@ -17,7 +17,6 @@ def training_cost(f):
     Model_Flops = HW_Flops * Util
     Cost_per_flop = Cost_per_sec / Model_Flops
     return round((Cost_per_flop * f), 1)
-
 
 def compact_model(p, t, new_p):
     og_loss = loss(p, t)
@@ -57,14 +56,6 @@ def compact_model(p, t, new_p):
     return new_t
 
 
-def chinchilla_model (input_loss): 
-    input_flops = ((input_loss - 0.5066)**(1/-0.0737)) * 5.984e22    # Cerebras-GPT equation 1 rebalanced
-    print("flops = " , input_flops)
-    p = math.sqrt(input_flops/120)                               # F = 6 * f * p, T = 20 * p
-    t = p * 20
-    l = loss (p,t)
-    print("L = ", l)
-    return p, t
 
 
 # Web App
@@ -73,141 +64,135 @@ app = Flask(__name__, static_folder="static", template_folder="templates")
 
 @app.route("/")
 def index():
-    return render_template("index.html")
+
+    models = []
+    with open('models.csv', 'r') as file:
+        reader = csv.DictReader(file)
+        for row in reader:
+            models.append(row)
+
+    # Pass the models into the template
+    return render_template('index.html', models=models)
+
+
 
 @app.route("/api/calculate", methods=["POST"])
 def calculate():
-
     data = request.get_json()
-    mode = data.get("mode")
-    parameters = float(data["parameters"]) * 1e9
-    training_tokens = float(data["trainingTokens"]) * 1e9
-   
-    # error handling for optional Inferences field
-    inferences = data.get("inferences")
-    if inferences is None or inferences == "":
-        inferences = 0
-    else:
-        inferences = float(inferences) * 1e9  # convert from millions
 
-    original_loss = loss(parameters, training_tokens)
-    original_flops = flops(parameters, training_tokens)
-    original_cost = training_cost(original_flops)
-    original_inf_cost = 2 * parameters * inferences
-            
-    
-    ### Logic Path for chinchilla-to-llama mode ###
+    # parse JSON values:
+    mode = data.get("mode_val")
+    print(mode)
 
-    if (mode == "chinchilla-to-llama"):
+    ### Compare Mode ###
+    if (mode == "compare"):
+        params1 = float(data["params1"]) * 1e9
+        params2 = float(data["params2"]) * 1e9
+        tokens1 = float(data["tokens1"]) * 1e9
+        tokens2 = float(data["tokens2"]) * 1e9
+        inf1 = float(data["inf1"]) * 1e9
+        inf2 = float(data["inf2"]) * 1e9
 
-        print('llmama mode');
-
-        compact_model_parameters = float(data["compactModelParameters"]) * 1e9
-
-        compact_model_tokens = compact_model(parameters, training_tokens, compact_model_parameters)
-
-        model_found = True
-        if compact_model_tokens is None:
-            model_found = False
-            input_model = { "loss": original_loss,
-                            "compute": original_flops,
-                            "original_inf_cost":original_inf_cost,
-                            "cost": original_cost}
-            output_model = {"found":model_found}
-            return jsonify({"input_model": input_model, "output_model": output_model})
-
-
-        compact_model_tokens_str = int(compact_model_tokens/1e9)
-        compact_model_loss = loss(compact_model_parameters, compact_model_tokens)
-        compact_model_flops = flops(compact_model_parameters, compact_model_tokens)
-
-        compact_model_cost = training_cost(compact_model_flops)
-
-        over_training_cost = (compact_model_flops / original_flops - 1) * 100
-        over_training_cost = f"{over_training_cost:.1f}%"
-
+        model1_loss = loss(params1, tokens1)
+        model2_loss = loss(params2, tokens2)
+        model1_flops = flops(params1, tokens1)
+        model2_flops = flops(params2, tokens2)
+        model1_inf_flops = 2 * params1 * inf1 
+        model2_inf_flops = 2 * params2 * inf2 
+        
         # Num of tokens needed to breakeven in total training + inf cost
-        if parameters == compact_model_parameters:
+        if params1 == params2:
             inf_breakeven_tokens = 0
             inf_breakeven_tokens_str = 0
         else:    
-            inf_breakeven_tokens = (compact_model_flops - original_flops) / (2 * (parameters - compact_model_parameters))
+            inf_breakeven_tokens = (model2_flops - model1_flops) / (2 * (params1 - params2))
             inf_breakeven_tokens_str = (round(inf_breakeven_tokens/1e9,0))
 
-        dau = int(inf_breakeven_tokens / (1000 * 365)) # daily active users, assuming 1000 tokens per day
+        response = {
+            "model1_loss": model1_loss,
+            "model2_loss": model2_loss,
+            "model1_flops": model1_flops,
+            "model2_flops": model2_flops,
+            "model1_inf_flops": model1_inf_flops,
+            "model2_inf_flops": model2_inf_flops,
+            "inf_breakeven_tokens": inf_breakeven_tokens_str
+        }
+        
+        return jsonify(response)
 
 
-        output_inf_cost = 2 * compact_model_parameters * inferences
+    ### ISO Loss Mode ###
+    elif (mode == "iso_loss"): 
 
-        input_model = { "loss": original_loss,
-                        "compute": original_flops,
-                        "original_inf_cost":original_inf_cost,
-                        "cost": original_cost}
-        output_model = {"found":model_found,
-                        "loss": compact_model_loss, 
-                        "tokens": compact_model_tokens_str,
-                        "compute": compact_model_flops,
-                        "cost": compact_model_cost,
-                        "otc":over_training_cost,
-                        "output_inf_cost":output_inf_cost,
-                        "inf_breakeven":inf_breakeven_tokens_str,
-                        "dau": dau}
-        return jsonify({"input_model": input_model, "output_model": output_model})
+        print('iso loss mode');
 
+        params1 = float(data["params1"]) * 1e9
+        params2 = float(data["params2"]) * 1e9
+        tokens1 = float(data["tokens1"]) * 1e9
+        inf1 = float(data["inf1"]) * 1e9
+        inf2 = float(data["inf2"]) * 1e9
 
-    ### Logic Path for llama-to-chinchilla mode ### 
-    elif (mode == "llama-to-chinchilla"):
+        model1_loss = loss(params1, tokens1)
+        model1_flops = flops(params1, tokens1)
+        model1_inf_flops = 2 * params1 * inf1 
+        
+        tokens2 = compact_model(params1, tokens1, params2)
+       
+        # handle model not found case
+        model_found = True
+        if tokens2 is None:
+            model_found = False
+            response = {"model1_loss": model1_loss,
+                        "model1_flops": model1_flops,
+                        "model1_inf_flops":model1_inf_flops}
+            return jsonify(response)
 
-        print('chinchilla mode');
+        # continue if model is found
+        model2_loss = loss(params2, tokens2)
+        model2_flops = flops(params2, tokens2)
+        model2_inf_flops = 2 * params2 * inf2 
 
-        chinchilla_params, chinchilla_tokens = chinchilla_model(original_loss)
-        chinchilla_tokens_str = int(chinchilla_tokens/1e9)
-        chinchilla_params_str = str(round(chinchilla_params/1e9, 2))
-        chinchilla_loss = loss(chinchilla_params, chinchilla_tokens)
-        chinchilla_flops = flops (chinchilla_params, chinchilla_tokens)
-        flops_decrease = ((original_flops - chinchilla_flops) / original_flops) * 100 
-        flops_decrease = f"{flops_decrease:.1f}%"
-        chinchilla_training_cost = training_cost(chinchilla_flops)
-        chinchilla_inf_cost = 2 * chinchilla_params * inferences
+        tokens2_str = int(tokens2/1e9)
 
-        if parameters == chinchilla_params:
+        # Num of tokens needed to breakeven in total training + inf cost
+        if params1 == params2:
             inf_breakeven_tokens = 0
             inf_breakeven_tokens_str = 0
         else:    
-            inf_breakeven_tokens = (original_flops - chinchilla_flops) / (2 * (chinchilla_params - parameters))
-            inf_breakeven_tokens_str = int(inf_breakeven_tokens/1e9)
+            inf_breakeven_tokens = (model2_flops - model1_flops) / (2 * (params1 - params2))
+            inf_breakeven_tokens_str = (round(inf_breakeven_tokens/1e9,0))
 
-        dau = int(inf_breakeven_tokens / (1000 * 365)) # daily active users, assuming 1000 tokens per day
-      
-        model_found = True
+        # dau = int(inf_breakeven_tokens / (1000 * 365)) # daily active users, assuming 1000 tokens per day
 
-        input_model = { "loss": original_loss,
-                        "compute": original_flops,
-                        "original_inf_cost":original_inf_cost,
-                        "cost": original_cost}
-        output_model = {"found":model_found,
-                        "loss": chinchilla_loss, 
-                        "parameters": chinchilla_params_str,
-                        "tokens": chinchilla_tokens_str,
-                        "compute": chinchilla_flops,
-                        "cost": chinchilla_training_cost,
-                        "otc":flops_decrease,
-                        "output_inf_cost":chinchilla_inf_cost,
-                        "inf_breakeven":inf_breakeven_tokens_str,
-                        "dau": dau}
-        return jsonify({"input_model": input_model, "output_model": output_model})
+        response = {
+            "tokens2": tokens2_str,
+            "model1_loss": model1_loss,
+            "model2_loss": model2_loss,
+            "model1_flops": model1_flops,
+            "model2_flops": model2_flops,
+            "model1_inf_flops": model1_inf_flops,
+            "model2_inf_flops": model2_inf_flops,
+            "inf_breakeven_tokens": inf_breakeven_tokens_str
+        }
+
+        return jsonify(response)
+        
+
 
 
 if __name__ == "__main__":
-    app.run(port=8080)
+    app.run(debug=True)
 
 
 
 
-
-
-
-
-
+# def chinchilla_model (input_loss): 
+#     input_flops = ((input_loss - 0.5066)**(1/-0.0737)) * 5.984e22    # Cerebras-GPT equation 1 rebalanced
+#     print("flops = " , input_flops)
+#     p = math.sqrt(input_flops/120)                               # F = 6 * f * p, T = 20 * p
+#     t = p * 20
+#     l = loss (p,t)
+#     print("L = ", l)
+#     return p, t
 
 

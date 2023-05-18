@@ -6,43 +6,78 @@
     <title>⚗️ Model Lab</title>
     <link rel="stylesheet" href="/static/styles.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>var models = {{ models | tojson }};</script>
     <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@300;400;500;600;700;900&display=swap" rel="stylesheet">
     <meta name="description" content="Calculate how much data and compute you need to train a large language model using the Chinchilla or Llama method.">
     <meta name="keywords" content="Large Language Models, LLMs, Chinchilla, Llama, Cerebras-GPT">
 </head>
 <body>
-    <div class="about-link">
-        <a href="#" id="about-link">About</a>
-    </div>
-    <h1 id="h1_name">⚗️ Model Lab </h1>
-    <h4>Estimate how much data and compute you need to train a llama style model</h4>
     <div class="container">
-        <div class="left">
-            <h2>Enter Your Model</h2>
-            <label for="mode-selector">Mode:</label>
-            <select id="mode-selector" name="mode-selector">
-              <option value="chinchilla-to-llama" selected>Chinchilla => Llama</option>
-              <option value="llama-to-chinchilla">Llama => Chinchilla</option>
+        <div id="h1_div">
+            <h1 id="h1_name">⚗️ Model Lab</h1>
+            <div class="about-link"><a href="#" id="about-link">About</a></div>
+            <h4>Compare different models, simulate runs, and estimate training & inference costs.</h4>
+        </div>
+        <div id="mode_div">
+        <label for="mode">Mode:</label>
+            <select id="mode">
+              <option value="compare" selected>Compare two models</option>
+              <option value="iso_loss">Find two models of the same loss</option>
             </select>
-            <label for="parameters">Parameters (billions):</label>
-            <input type="number" id="parameters">
-            <label for="trainingTokens">Training Tokens (billions):</label>
-            <input type="number" id="trainingTokens">
-            <br>
-            <label class="chinchilla-to-llama" for="chinchilla" style="display: inline-block;">Chinchilla Optimal:</label>
-            <input  class="chinchilla-to-llama" type="checkbox" id="is_chinchilla" name="chinchilla" checked>
-            <br><br>
-            <h2 id="output-mode-h2">Make it a Llama Style Model</h2>
-            <label class="chinchilla-to-llama" for="compactModelParameters">Compact Model Parameters (billions):</label>
-            <input class="chinchilla-to-llama" type="number" id="compactModelParameters">
-            <label for="inferences">Number of Inferences (billion tokens):</label>
-            <input type="number" id="inferences" placeholder="optional">
+        </div>
+        <div class="flex-container">
+            <table id="input_table">
+                <thead>
+                  <tr>
+                    <th></th>
+                    <th>Model 1</th>
+                    <th>Model 2</th>
+                  </tr>
+                </thead>
+                <tbody>
+                <tr>
+                  <td>Select Model:</td>
+                  <td>
+                    <select id="model1_list">
+                        {% for item in models %}
+                            <option value="{{item.name}}">{{item.name}}</option>
+                        {% endfor %}
+                    </select>
+                  </td>
+                  <td>
+                    <select id="model2_list">
+                        {% for item in models %}
+                            <option value="{{item.name}}">{{item.name}}</option>
+                        {% endfor %}
+                    </select>
+                  </td>
+                </tr>
+                  <tr>
+                    <td>Parameters (B):</td>
+                    <td><input type="number" id="params1" value="10"></td>
+                    <td><input type="number" id="params2" value="5"></td>
+                  </tr>
+                  <tr>
+                    <td>Tokens (B):</td>
+                    <td><input type="number" id="tokens1" value="200"></td>
+                    <td><input type="text" id="tokens2" value="400"></td>
+                  </tr>
+                  <tr>
+                    <td>Inferences (B):</td>
+                    <td><input type="number" placeholder="optional" id="inf1"></td>
+                    <td><input type="number" placeholder="optional" id="inf2"></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
             <button id="calculate">Calculate</button>
         </div>
-        <div id="results"></div>
     </div>
-    <div class="chart-container">
-        <canvas id="myChart"></canvas>
+    <div id="results"></div>
+    <div id="total_compute_cost">
+        <h2>Total Compute Cost</h2>
+            <canvas id="myChart"></canvas>
     </div>
     <div id="modal" class="modal">
         <div class="modal-content">
