@@ -21,13 +21,18 @@ div {
 }
 
 #output_table th, td {
-  width: 150px; /* Set the width of table cells */
+  width: 120px; /* Set the width of table cells */
   height: 25px; /* Set the height of table cells */
   padding: 5px; /* Add padding for spacing within cells */
   font-weight: 500;
   text-align: right;
   padding-left:25px;
 }
+
+#output_table tr td:first-child {
+      width: 180px; /* Set the width of table cells */
+}
+
 
 #output_table td {
   font-weight: 400;
@@ -40,7 +45,11 @@ div {
 }
 
 #mode{
-    width: 200px;
+    width: 213px;
+    margin-right: 12px;
+}
+
+#mode_label{
     margin-right: 12px;
 }
 
@@ -50,6 +59,7 @@ div {
 }
 
 #total_compute_cost {
+    height:450px;
     margin-left: 10%;
     margin-right: 10%;
 }
@@ -57,6 +67,17 @@ div {
 #myChart{
     padding: 5%;
 }
+
+#loss_chart_div {
+    height: 500px;
+    margin-left: 10%;
+    margin-right: 10%;
+}
+
+#lossChart{
+    padding: 5%;
+}
+
 
 input:disabled {
   background-color: #5A5A5A;
@@ -69,7 +90,7 @@ table tr td:first-child {
 }
 
 select {
-    width: 93%;
+    width: 89%;
     background-color: #f3f3f3;
     color: #333;
     font-size: 16px;
@@ -272,16 +293,23 @@ h2 {
     font-size: 24px;
     font-weight: 600;
     margin-bottom: 5px;
-    margin-top: 10px;
 }
 
 h4 {
     font-size: 18px;
     font-weight: 500;
-    margin-bottom: 20px;
+    margin-bottom: 0px;
 }
 
 p {
     font-weight: 400;
     padding-left: 15px;
+}
+
+li {
+    font-weight: 400;
+}
+
+ul {
+    margin:0;
 }

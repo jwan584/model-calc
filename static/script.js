@@ -2,7 +2,10 @@
 let scrollPosition = 0;
 const mode = document.getElementById("mode");
 const total_compute_cost = document.getElementById("total_compute_cost");
+const loss_chart = document.getElementById("loss_chart_div");
+const flops_chart = document.getElementById('myChart')
 total_compute_cost.style.display = "none"
+loss_chart.style.display = "none"
 
 $(document).ready(function() {
     $("#model1_list").change(function() {
@@ -62,15 +65,13 @@ $(document).ready(function() {
 });
 
 
-
 mode.addEventListener("change", function () {
   const tokens2 = document.getElementById("tokens2");
   if (mode.value === "iso_loss") {
     tokens2.value = "🧙✨";
     tokens2.disabled = true;
     model2_list.value = "Custom";
-    document.getElementById("params2").value = "";
-
+    document.getElementById("params2").value = document.getElementById("params1").value / 2;
   } else {
     tokens2.disabled = false;
     document.getElementById("tokens2").value = "";
@@ -78,13 +79,27 @@ mode.addEventListener("change", function () {
 });
 
 
+
+const inferences1 = document.getElementById("inf1");
+const inferences2 = document.getElementById("inf2");
+
+inferences1.addEventListener("blur", function() {
+  inferences2.value = inferences1.value;
+});
+
 document.addEventListener("keydown", event => {
   if (event.keyCode === 13) { // 13 is the key code for the enter key
     document.getElementById("calculate").click();
   }
 });
 
+//  Main Function //
+
 document.getElementById("calculate").addEventListener("click", async () => {
+
+  // Get the current scroll position
+  scrollPosition = window.scrollY;
+
   const params1 = document.getElementById("params1").value;
   const params2 = document.getElementById("params2").value;
   const tokens1 = document.getElementById("tokens1").value;
@@ -93,12 +108,8 @@ document.getElementById("calculate").addEventListener("click", async () => {
   const inf2 = document.getElementById("inf2").value || 0;
   const mode_val = mode.value;
  
-  console.log(params1)
-  console.log(mode.value)
 
-  // Get the current scroll position
-  scrollPosition = window.scrollY;
-
+  // Send JSON data
   const response = await fetch("/api/calculate", {
       method: "POST",
       headers: {
@@ -114,20 +125,17 @@ document.getElementById("calculate").addEventListener("click", async () => {
 
   // Return error if no model is found and stop rendering 
   if (!data.found) {
-    outputModelHTML += "<h4>A  " + params2 + " billion parameter model cannot reach the loss of Model 1 with any amount of training data. Increase the model size and try again.</h4>"
+    outputModelHTML += `<h4>😵 A ${params2} billion parameter model cannot reach the loss of Model 1 with any amount of training data. Increase the model size and try again.</h4>`
     document.getElementById("results").innerHTML = outputModelHTML;
     document.getElementById('myChart').style.display = 'none';
     total_compute_cost.style.display = "none"
     return;
   }
 
-
-
-
-  console.log(mode.value)
   if (mode.value === "iso_loss")
     tokens2 = data.tokens2;
 
+  // Extract JSON values
   const model1_loss = data.model1_loss
   const model2_loss = data.model2_loss
   const model1_flops = data.model1_flops.toExponential(2)
@@ -135,16 +143,19 @@ document.getElementById("calculate").addEventListener("click", async () => {
   const model1_inf_flops = data.model1_inf_flops.toExponential(2)
   const model2_inf_flops = data.model2_inf_flops.toExponential(2)
   const inf_breakeven_tokens = (Math.abs(data.inf_breakeven_tokens)).toLocaleString();
-
   const memory1 = (params1 * 1.2).toFixed(1)
   const memory2 = (params2 * 1.2).toFixed(1)
+  const loss_series1 = data.loss_series1
+  const loss_series2 = data.loss_series2
 
+  // Calculate percent values
   let params_change = ((params2 - params1) / params1 * 100).toFixed(1)
   let tokens_change = ((tokens2 - tokens1) / tokens1 * 100).toFixed(1)
   let loss_change = ((model2_loss - model1_loss) / model1_loss * 100).toFixed(1)
   let flops_change = ((model2_flops - model1_flops) / model1_flops * 100).toFixed(1)
   let memory_change = ((memory2 - memory1) / memory1 * 100).toFixed(1)
 
+  // Format positive values with + sign
   params_change = params_change > 0 ? `+${params_change}` : `${params_change}`;
   tokens_change = tokens_change > 0 ? `+${tokens_change}` : `${tokens_change}`;
   loss_change = loss_change > 0 ? `+${loss_change}` : `${loss_change}`;
@@ -152,19 +163,19 @@ document.getElementById("calculate").addEventListener("click", async () => {
   memory_change = memory_change > 0 ? `+${memory_change}` : `${memory_change}`;
 
 
+  // Prep explainer text
 
-  console.log(inf_breakeven_tokens)
-
+  explainer = "<h4>Notes:</h4><ul>"
 
   if (mode.value === "iso_loss")
-    explainer = "To achieve the same loss as Model 1, Model 2 with " + params2 + "B parameters would need to be trained with " + tokens2 + "B tokens. ";
+    explainer += `<li>To achieve the same loss as Model 1, Model 2 would need to be trained with ${tokens2}B tokens.</li>`;
+
 
   if (inf_breakeven_tokens != "0")
-    explainer += "Model 1 and Model 2 achieve total compute breakeven after " + inf_breakeven_tokens + " billion inference tokens."
+    explainer += `<li>Model 1 and Model 2 achieve total compute breakeven after ${inf_breakeven_tokens} billion inference tokens.</li>`;
 
 
   // JS => HTML Content
-
    outputModelHTML = `
       <h2>Results</h2>
       <table id="output_table">
@@ -214,14 +225,18 @@ document.getElementById("calculate").addEventListener("click", async () => {
     // Push HTML to results div
     document.getElementById("results").innerHTML = outputModelHTML;
 
-    // Draw Chart
+    // Draw Charts
     const inputTrainingFlops = model1_flops
     const outputTrainingFlops = model2_flops
     const inputInfFlops = model1_inf_flops
     const outputInfFlops = model2_inf_flops
 
     drawChart(inputTrainingFlops, outputTrainingFlops, inputInfFlops, outputInfFlops); 
-    document.getElementById('myChart').style.display = 'block';
+    drawLossChart(loss_series1, loss_series2);
+    total_compute_cost.style.display = "block"
+    flops_chart.style.display = 'block';
+    loss_chart.style.display = "block"
+
 
 });
 
@@ -229,7 +244,6 @@ document.getElementById("calculate").addEventListener("click", async () => {
 function drawChart(inputTrainingFlops, outputTrainingFlops, inputInfFlops, outputInfFlops) {
         // Get the canvas element
       const canvas = document.getElementById('myChart');
-      total_compute_cost.style.display = "block"
 
       // Destroy the existing chart object (if it exists)
       if (window.chart) {
@@ -259,6 +273,10 @@ function drawChart(inputTrainingFlops, outputTrainingFlops, inputInfFlops, outpu
           ]
         },
         options: {
+          maintainAspectRatio: false,  
+          animation: {
+              duration: 0
+          },
           plugins: {
             legend: {
               position: 'bottom'
@@ -312,6 +330,76 @@ function drawChart(inputTrainingFlops, outputTrainingFlops, inputInfFlops, outpu
       });
       window.scrollTo(0, scrollPosition);
 }
+
+
+let lossChart;
+
+function drawLossChart(data1, data2) {
+    // Get the canvas element
+    const canvas = document.getElementById('lossChart');
+
+    // Destroy the existing chart object (if it exists)
+    if (lossChart) {
+        lossChart.destroy();
+    }
+
+    // Convert tuples to point objects
+    const points1 = data1.map(tuple => ({x: tuple[0], y: tuple[1]}));
+    const points2 = data2.map(tuple => ({x: tuple[0], y: tuple[1]}));
+
+    const dataSet1 = {
+        label: "Model 1",
+        data: points1,
+        fill: false,
+        borderColor: '#0077be',
+        pointRadius: 0 // disable individual point markers
+    };
+
+    const dataSet2 = {
+        label: "Model 2",
+        data: points2,
+        fill: false,
+        borderColor: '#4CAF50',
+        pointRadius: 0 // disable individual point markers
+    };
+
+    // Create the new chart object
+    lossChart = new Chart(canvas, {
+        type: 'line',
+        data: {
+            datasets: [dataSet1, dataSet2]
+        },
+        options: {
+           plugins: {
+              legend: {
+                position: 'bottom',
+                 labels: {
+                    padding: 30, 
+                    boxWidth: 40, 
+                }
+              },
+            },
+            maintainAspectRatio: false,  
+            scales: {
+                x: {
+                    type: 'linear',
+                    title: {
+                        display: true,
+                        text: 'Training Tokens',
+                    },
+                },
+                y: {
+                    type: 'linear',
+                    title: {
+                        display: true,
+                        text: 'Test Loss',
+                    },
+                },
+            },
+        },
+    });
+}
+
 
 
 

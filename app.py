@@ -9,6 +9,11 @@ def loss(p, t):
 def flops(p, t):
     return 6 * p * t
 
+def calc_loss_series(p, t):
+    tokens = np.linspace(1e9, t, 100)
+    loss_series = [(int(token/1e9), loss(p, token)) for token in tokens]
+    return loss_series
+
 def training_cost(f):       
     Cost_per_h = 40.96       #AWS 8xA100 on demand
     Cost_per_sec = Cost_per_h / (60 * 60)
@@ -20,7 +25,7 @@ def training_cost(f):
 
 def compact_model(p, t, new_p):
     og_loss = loss(p, t)
-    print("og_loss = ", og_loss)
+    # print("og_loss = ", og_loss)
 
     # Define the lower and upper bounds of the token range
     lower_bound = new_p         # lower bound is 1 token per param
@@ -35,26 +40,25 @@ def compact_model(p, t, new_p):
         upper_bound_new *= 0.1 
         upper_loss = loss(new_p, upper_bound) 
         upper_loss_new = loss (new_p, upper_bound_new)
-        print(f"upper t = {upper_bound:.3e}, loss = {upper_loss}, lower t = {upper_bound_new:.3e}, loss = {upper_loss_new}")
+        # print(f"upper t = {upper_bound:.3e}, loss = {upper_loss}, lower t = {upper_bound_new:.3e}, loss = {upper_loss_new}")
         t_values = np.linspace(lower_bound, upper_bound, 1000)
         loss_values = [loss(p, t) for t in t_values]
     
     # Perform binary search over monotonic pruned range
-    tolerance = 0.0001
+    tolerance = 0.00001
     new_t = (lower_bound + upper_bound) / 2
     while abs(loss(new_p, new_t) - og_loss) > tolerance:
         if lower_bound == upper_bound:
-            print('no model found')
+            # print('no model found')
             return None
         if loss(new_p, new_t) < og_loss:
             upper_bound = new_t
         else:
             lower_bound = new_t
         new_t = (lower_bound + upper_bound) / 2
-        print(f"lower_bound: {lower_bound:.3e}, upper_bound: {upper_bound:.3}, new_t: {new_t:.3e}, loss(new_p, new_t): {loss(new_p, new_t)}")
+        # print(f"lower_bound: {lower_bound:.3e}, upper_bound: {upper_bound:.3}, new_t: {new_t:.3e}, loss(new_p, new_t): {loss(new_p, new_t)}")
 
     return new_t
-
 
 
 
@@ -96,6 +100,8 @@ def calculate():
         tokens2 = float(data["tokens2"]) * 1e9
         inf1 = float(data["inf1"]) * 1e9
         inf2 = float(data["inf2"]) * 1e9
+        loss_series1 = calc_loss_series(params1, tokens1)
+        loss_series2 = calc_loss_series(params2, tokens2)
 
         model1_loss = loss(params1, tokens1)
         model2_loss = loss(params2, tokens2)
@@ -122,6 +128,8 @@ def calculate():
             "model2_flops": model2_flops,
             "model1_inf_flops": model1_inf_flops,
             "model2_inf_flops": model2_inf_flops,
+            "loss_series1": loss_series1,
+            "loss_series2": loss_series2,
             "inf_breakeven_tokens": inf_breakeven_tokens_str
         }
         
@@ -130,9 +138,6 @@ def calculate():
 
     ### ISO Loss Mode ###
     elif (mode == "iso_loss"): 
-
-        print('iso loss mode');
-
         params1 = float(data["params1"]) * 1e9
         params2 = float(data["params2"]) * 1e9
         tokens1 = float(data["tokens1"]) * 1e9
@@ -160,6 +165,9 @@ def calculate():
         model2_flops = flops(params2, tokens2)
         model2_inf_flops = 2 * params2 * inf2 
 
+        loss_series1 = calc_loss_series(params1, tokens1)
+        loss_series2 = calc_loss_series(params2, tokens2)
+
         tokens2_str = int(tokens2/1e9)
 
         # Num of tokens needed to breakeven in total training + inf cost
@@ -170,8 +178,6 @@ def calculate():
             inf_breakeven_tokens = (model2_flops - model1_flops) / (2 * (params1 - params2))
             inf_breakeven_tokens_str = (round(inf_breakeven_tokens/1e9,0))
 
-        # dau = int(inf_breakeven_tokens / (1000 * 365)) # daily active users, assuming 1000 tokens per day
-
         response = {
             "found":model_found,
             "tokens2": tokens2_str,
@@ -181,6 +187,8 @@ def calculate():
             "model2_flops": model2_flops,
             "model1_inf_flops": model1_inf_flops,
             "model2_inf_flops": model2_inf_flops,
+            "loss_series1": loss_series1,
+            "loss_series2": loss_series2,
             "inf_breakeven_tokens": inf_breakeven_tokens_str
         }
 
@@ -191,17 +199,4 @@ def calculate():
 
 if __name__ == "__main__":
     app.run(debug=True)
-
-
-
-
-# def chinchilla_model (input_loss): 
-#     input_flops = ((input_loss - 0.5066)**(1/-0.0737)) * 5.984e22    # Cerebras-GPT equation 1 rebalanced
-#     print("flops = " , input_flops)
-#     p = math.sqrt(input_flops/120)                               # F = 6 * f * p, T = 20 * p
-#     t = p * 20
-#     l = loss (p,t)
-#     print("L = ", l)
-#     return p, t
-
 

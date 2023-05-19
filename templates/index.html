@@ -20,10 +20,10 @@
             <h4>Compare different models, simulate runs, and estimate training & inference costs.</h4>
         </div>
         <div id="mode_div">
-        <label for="mode">Mode:</label>
+        <label for="mode" id="mode_label">Mode:</label>
             <select id="mode">
               <option value="compare" selected>Compare two models</option>
-              <option value="iso_loss">Find two models of the same loss</option>
+              <option value="iso_loss">Match Loss of Model 1</option>
             </select>
         </div>
         <div class="flex-container">
@@ -41,14 +41,14 @@
                   <td>
                     <select id="model1_list">
                         {% for item in models %}
-                             <option value="{{ item.name }}" {% if item.name == 'Cerebras-GPT 1.3B' %}selected{% endif %}>{{ item.name }}</option>
+                             <option value="{{ item.name }}" {% if item.name == 'Cerebras-GPT 2.7B' %}selected{% endif %}>{{ item.name }}</option>
                         {% endfor %}
                     </select>
                   </td>
                   <td>
                     <select id="model2_list">
                         {% for item in models %}
-                            <option value="{{ item.name }}" {% if item.name == 'Pythia 1.4B' %}selected{% endif %}>{{ item.name }}</option>
+                            <option value="{{ item.name }}" {% if item.name == 'Pythia 1B' %}selected{% endif %}>{{ item.name }}</option>
                         {% endfor %}
                     </select>
                   </td>
@@ -79,6 +79,10 @@
     <div id="total_compute_cost">
         <h2>Total Compute Cost</h2>
             <canvas id="myChart"></canvas>
+    </div>
+    <div id="loss_chart_div">
+        <h2>Loss Curve</h2>
+            <canvas id="lossChart"></canvas>
     </div>
     <div id="modal" class="modal">
         <div class="modal-content">
