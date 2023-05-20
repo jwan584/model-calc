@@ -2,16 +2,19 @@ import math, csv, os
 import numpy as np
 from flask import Flask, render_template, request, jsonify
 
+# Cerebras-GPT Paper Equation (1) + (4)
 def loss(p, t):
     l = (1 + 0.023 * math.log(math.sqrt(20 / (t / p))) ** 2) * (((6 * t * p) / 5.984E+22) ** -0.0737 + 0.5066)
     return(round(l,4))
 
-def flops(p, t):
-    return 6 * p * t
+# Cerebras-GPT Paper Equation (1)
+def flops2loss (f): return ((f/5.984e22)**-0.0737) + 0.5066
+
+def flops(p, t): return 6 * p * t
 
 def calc_loss_series(p, t):
     tokens = np.linspace(1e9, t, 100)
-    loss_series = [(int(token/1e9), loss(p, token)) for token in tokens]
+    loss_series = [(flops(p,token), loss(p,token)) for token in tokens]
     return loss_series
 
 def training_cost(f):       

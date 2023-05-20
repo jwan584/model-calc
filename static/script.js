@@ -385,7 +385,7 @@ function drawLossChart(data1, data2) {
                     type: 'linear',
                     title: {
                         display: true,
-                        text: 'Training Tokens',
+                        text: 'Training FLOPs',
                     },
                 },
                 y: {

@@ -1,6 +1,6 @@
 
 div {
-/*    border: 0.5px solid black; */
+    border: 0.5px solid black; 
     padding: 10px;
 }
 
@@ -312,4 +312,80 @@ li {
 
 ul {
     margin:0;
+}
+
+@media screen and (max-width: 600px) {
+    .container {
+        padding:0;
+        flex-direction: column;
+    }
+    .flex-container {
+        flex-direction: column;
+        margin:0;
+    }
+    #mode_div {
+        text-align: center;
+        padding-right: 0;
+    }
+    #about-link {
+        padding-right: 0;
+    }
+
+    input[type="number"], input[type="text"] {
+    width:50px;
+    }
+
+
+    #h1_div {
+        padding-left:0;
+    }
+    #results{
+        margin: 0;
+    }
+    #input_table {
+        padding:0;
+        margin:0;
+    }
+
+
+    #output_table {
+        margin:0;
+        padding:0;
+    }
+
+    #output_table th, td {
+      width: 90px; /* Set the width of table cells */
+      height: 20px; /* Set the height of table cells */
+      padding: 3px; /* Add padding for spacing within cells */
+      font-weight: 500;
+      text-align: right;
+      font-size: 9pt;
+    }
+
+    /* First column */
+        #output_table tr td:first-child {
+        width: 50px; 
+        font-size: 9pt;
+        padding:0;
+        margin:0;
+    }
+
+    #output_table td {
+      font-weight: 400;
+      text-align: right;
+      font-size: 9pt;
+    }
+
+
+    button {
+        width: 50%;
+        margin-left:0;
+    }
+    select {
+        width: 100%;
+    }
+    input[type="number"], input[type="text"] {
+        width: 100%;
+    }
+    /* And so on for other elements */
 }
