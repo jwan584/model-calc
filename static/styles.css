@@ -1,6 +1,6 @@
 
 div {
-    border: 0.5px solid black; 
+/*    border: 0.5px solid black; */
     padding: 10px;
 }
 
@@ -40,6 +40,7 @@ div {
 }
 
 #results {
+    margin-top: 15px;
     margin-left: 10%;
     margin-right: 10%;
 }
@@ -59,7 +60,7 @@ div {
 }
 
 #total_compute_cost {
-    height:450px;
+    height:100px;
     margin-left: 10%;
     margin-right: 10%;
 }
@@ -269,7 +270,7 @@ body {
     font-family: 'Rubik', Arial, sans-serif;
     max-width: 960px;
     margin: 0 auto;
-    padding: 20px;
+    padding: 15px;
     font-size: 16px;
     line-height: 1.5;
     font-weight: 300;
@@ -314,7 +315,29 @@ ul {
     margin:0;
 }
 
+#notes {
+    padding-left: 3%;
+}
+
+/* Mobile */ 
+
 @media screen and (max-width: 600px) {
+
+    #input_table {
+      width: 100%; /* Set table width to 100% of the container */
+    }
+
+    #input_table td, th {
+      width: 120px; /* Set the width of table cells */
+      height: 5px; /* Set the height of table cells */
+      padding: 1px; /* Add padding for spacing within cells */
+    }
+
+  #input_table tr td:first-child {
+      width: 28%; /* Set the width of table cells */
+    }
+
+
     .container {
         padding:0;
         flex-direction: column;
@@ -331,17 +354,15 @@ ul {
         padding-right: 0;
     }
 
-    input[type="number"], input[type="text"] {
-    width:50px;
-    }
-
-
     #h1_div {
         padding-left:0;
     }
+
     #results{
         margin: 0;
+        padding: 0;
     }
+
     #input_table {
         padding:0;
         margin:0;
@@ -354,7 +375,7 @@ ul {
     }
 
     #output_table th, td {
-      width: 90px; /* Set the width of table cells */
+      width: 80px; /* Set the width of table cells */
       height: 20px; /* Set the height of table cells */
       padding: 3px; /* Add padding for spacing within cells */
       font-weight: 500;
@@ -364,7 +385,7 @@ ul {
 
     /* First column */
         #output_table tr td:first-child {
-        width: 50px; 
+        width: 70px; 
         font-size: 9pt;
         padding:0;
         margin:0;
@@ -373,19 +394,47 @@ ul {
     #output_table td {
       font-weight: 400;
       text-align: right;
-      font-size: 9pt;
     }
 
+    #total_compute_cost {
+        height:350px;
+        margin-left: 0;
+        margin-right: 0%;
+        padding: 0;
+    }
+
+    #myChart {
+        padding-bottom:15%;
+    }
+
+    #loss_chart_div {
+        height:400px;
+        margin:0;
+        padding:0;
+    }
+
+    #lossChart{
+        padding-bottom:15%;
+    }
+
+    h2 {
+        padding:0;
+    }
 
     button {
         width: 50%;
-        margin-left:0;
+        margin: auto;
+        margin-bottom: 20px;
     }
     select {
         width: 100%;
     }
     input[type="number"], input[type="text"] {
-        width: 100%;
+        width: 80%;
     }
-    /* And so on for other elements */
+     li {
+        font-size: 10pt;
+        font-weight: 400;
+    }
+
 }

@@ -1,4 +1,5 @@
 // Define a variable to store the current scroll position
+let isMobileLayout = false;
 let scrollPosition = 0;
 const mode = document.getElementById("mode");
 const total_compute_cost = document.getElementById("total_compute_cost");
@@ -6,6 +7,21 @@ const loss_chart = document.getElementById("loss_chart_div");
 const flops_chart = document.getElementById('myChart')
 total_compute_cost.style.display = "none"
 loss_chart.style.display = "none"
+
+let mobile_multiple_03 = 1;
+let mobile_multiple_05 = 1;
+let mobile_multiple_07 = 1;
+
+if (window.innerWidth <= 600) {
+  isMobileLayout = true;
+  mobile_multiple_03 = 0.3;
+  mobile_multiple_05 = 0.5;
+  mobile_multiple_07 = 0.7;
+  console.log('mobile')
+}
+
+
+
 
 $(document).ready(function() {
     $("#model1_list").change(function() {
@@ -165,7 +181,7 @@ document.getElementById("calculate").addEventListener("click", async () => {
 
   // Prep explainer text
 
-  explainer = "<h4>Notes:</h4><ul>"
+  explainer = `<h4 id="notes">Notes:</h4><ul>`
 
   if (mode.value === "iso_loss")
     explainer += `<li>To achieve the same loss as Model 1, Model 2 would need to be trained with ${tokens2}B tokens.</li>`;
@@ -261,18 +277,19 @@ function drawChart(inputTrainingFlops, outputTrainingFlops, inputInfFlops, outpu
               data: [inputTrainingFlops, outputTrainingFlops],
               backgroundColor: ['#0077be', '#0077be'],
               stack: 'Stack 1',
-              barThickness: 200
+              barThickness: 200 * mobile_multiple_03
             },
             {
               label: 'Inference FLOPs',
               data: [inputInfFlops, outputInfFlops],
               backgroundColor: ['#4CAF50', '#4CAF50'],
               stack: 'Stack 1',
-              barThickness: 200
+              barThickness: 200 * mobile_multiple_03
             }
           ]
         },
         options: {
+          responsive: true,
           maintainAspectRatio: false,  
           animation: {
               duration: 0
